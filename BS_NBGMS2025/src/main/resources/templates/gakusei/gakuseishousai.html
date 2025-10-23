@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>技術者管理システム</title>
+	<meta charset="utf-8">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
+
+	<style>
+		.navbar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 51px;
+			background-color: #f9f9f9;
+			color: #000000;
+			display: flex;
+			align-items: center;
+			padding: 0 10px;
+			box-sizing: border-box;
+			z-index: 1000;
+			border-bottom: 1px solid #e5e5e5;
+		}
+
+		a {
+			letter-spacing: 0.05em;
+		}
+
+		#title {
+			position: absolute;
+			left: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 18px;
+			color: #777;
+		}
+
+		#user {
+			position: absolute;
+			right: 20px;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+		}
+
+		.dropdown-menu {
+			display: none;
+			position: absolute;
+			top: 40px;
+			right: 0;
+			transform: translateX(-100px);
+			background-color: #fff;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+			min-width: 100px;
+			z-index: 2000;
+		}
+
+		.dropdown-menu a {
+			display: block;
+			padding: 8px 10px;
+			color: #333;
+			text-decoration: none;
+			font-size: 14px;
+		}
+
+		.dropdown-menu a:hover {
+			background-color: #f2f2f2;
+		}
+
+
+		.sidebar {
+			position: fixed;
+			top: 51px;
+			left: 0;
+			width: 250px;
+			height: calc(100% - 51px);
+			background-color: #f9f9f9;
+			color: rgb(48, 48, 48);
+			box-sizing: border-box;
+			border-right: 1px solid #e5e5e5;
+		}
+
+		.sidebar-nav div {
+			margin: 0;
+			padding: 10px;
+			border-bottom: 1px solid #e5e5e5;
+
+		}
+
+		.sidebar-nav div a {
+			color: #454545;
+			font-size: 14px;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+		}
+
+		.sidebar-nav div:hover {
+			background-color: #e6e6e6;
+			color: #fff;
+		}
+
+		.main-content {
+			margin-top: 30px;
+			margin-left: 240px;
+			padding: 40px;
+			min-height: calc(100vh - 51px);
+			background-color: #fff;
+			display: flex;
+			justify-content: center;
+		}
+
+		#shousaitable {
+			width: 1060px;
+			table-layout: auto;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="#">ログアウト</a>
+			</div>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+							style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+							style="margin-right: 5px;">学生情報</a>
+				</div>
+				<div>
+					<a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
+							style="margin-right: 5px;">ポイント履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/hiaringu}"><img src="/image/hiaringu.png" height="18px"
+							style="margin-right: 5px;">ヒアリング履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png" height="18px"
+							style="margin-right: 5px;">出力</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="main-content">
+		<div id="table-content">
+			<div class="col-lg-12">
+				<div class="panel panel-default" style="width: 1090px;">
+					<div class="panel-heading">
+						学生
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-6">
+								<form role="form">
+									<div class="form-group">
+										<label>Text Input</label>
+										<input class="form-control">
+										<p class="help-block">Example block-level help text here.</p>
+									</div>
+									<div class="form-group">
+										<label>Text Input with Placeholder</label>
+										<input class="form-control" placeholder="Enter text">
+									</div>
+									<div class="form-group">
+										<label>Static Control</label>
+										<p class="form-control-static">email@example.com</p>
+									</div>
+									<div class="form-group">
+										<label>File input</label>
+										<input type="file">
+									</div>
+									<div class="form-group">
+										<label>Text area</label>
+										<textarea class="form-control" rows="3"></textarea>
+									</div>
+									<div class="form-group">
+										<label>Checkboxes</label>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" value="">Checkbox 1
+											</label>
+										</div>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" value="">Checkbox 2
+											</label>
+										</div>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox" value="">Checkbox 3
+											</label>
+										</div>
+									</div>
+									<div class="form-group">
+										<label>Inline Checkboxes</label>
+										<label class="checkbox-inline">
+											<input type="checkbox">1
+										</label>
+										<label class="checkbox-inline">
+											<input type="checkbox">2
+										</label>
+										<label class="checkbox-inline">
+											<input type="checkbox">3
+										</label>
+									</div>
+									<div class="form-group">
+										<label>Radio Buttons</label>
+										<div class="radio">
+											<label>
+												<input type="radio" name="optionsRadios" id="optionsRadios1"
+													value="option1" checked>Radio 1
+											</label>
+										</div>
+										<div class="radio">
+											<label>
+												<input type="radio" name="optionsRadios" id="optionsRadios2"
+													value="option2">Radio 2
+											</label>
+										</div>
+										<div class="radio">
+											<label>
+												<input type="radio" name="optionsRadios" id="optionsRadios3"
+													value="option3">Radio 3
+											</label>
+										</div>
+									</div>
+									<div class="form-group">
+										<label>Inline Radio Buttons</label>
+										<label class="radio-inline">
+											<input type="radio" name="optionsRadiosInline" id="optionsRadiosInline1"
+												value="option1" checked>1
+										</label>
+										<label class="radio-inline">
+											<input type="radio" name="optionsRadiosInline" id="optionsRadiosInline2"
+												value="option2">2
+										</label>
+										<label class="radio-inline">
+											<input type="radio" name="optionsRadiosInline" id="optionsRadiosInline3"
+												value="option3">3
+										</label>
+									</div>
+									<div class="form-group">
+										<label>Selects</label>
+										<select class="form-control">
+											<option>1</option>
+											<option>2</option>
+											<option>3</option>
+											<option>4</option>
+											<option>5</option>
+										</select>
+									</div>
+									<div class="form-group">
+										<label>Multiple Selects</label>
+										<select multiple class="form-control">
+											<option>1</option>
+											<option>2</option>
+											<option>3</option>
+											<option>4</option>
+											<option>5</option>
+										</select>
+									</div>
+									<button type="submit" class="btn btn-default">Submit Button</button>
+									<button type="reset" class="btn btn-default">Reset Button</button>
+								</form>
+							</div>
+							<!-- /.col-lg-6 (nested) -->
+							<div class="col-lg-6">
+								<h1>Disabled Form States</h1>
+								<form role="form">
+									<fieldset disabled>
+										<div class="form-group">
+											<label for="disabledSelect">Disabled input</label>
+											<input class="form-control" id="disabledInput" type="text"
+												placeholder="Disabled input" disabled>
+										</div>
+										<div class="form-group">
+											<label for="disabledSelect">Disabled select menu</label>
+											<select id="disabledSelect" class="form-control">
+												<option>Disabled select</option>
+											</select>
+										</div>
+										<div class="checkbox">
+											<label>
+												<input type="checkbox">Disabled Checkbox
+											</label>
+										</div>
+										<button type="submit" class="btn btn-primary">Disabled Button</button>
+									</fieldset>
+								</form>
+								<h1>Form Validation States</h1>
+								<form role="form">
+									<div class="form-group has-success">
+										<label class="control-label" for="inputSuccess">Input with success</label>
+										<input type="text" class="form-control" id="inputSuccess">
+									</div>
+									<div class="form-group has-warning">
+										<label class="control-label" for="inputWarning">Input with warning</label>
+										<input type="text" class="form-control" id="inputWarning">
+									</div>
+									<div class="form-group has-error">
+										<label class="control-label" for="inputError">Input with error</label>
+										<input type="text" class="form-control" id="inputError">
+									</div>
+								</form>
+								<h1>Input Groups</h1>
+								<form role="form">
+									<div class="form-group input-group">
+										<span class="input-group-addon">@</span>
+										<input type="text" class="form-control" placeholder="Username">
+									</div>
+									<div class="form-group input-group">
+										<input type="text" class="form-control">
+										<span class="input-group-addon">.00</span>
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-addon"><i class="fa fa-eur"></i>
+										</span>
+										<input type="text" class="form-control" placeholder="Font Awesome Icon">
+									</div>
+									<div class="form-group input-group">
+										<span class="input-group-addon">$</span>
+										<input type="text" class="form-control">
+										<span class="input-group-addon">.00</span>
+									</div>
+									<div class="form-group input-group">
+										<input type="text" class="form-control">
+										<span class="input-group-btn">
+											<button class="btn btn-default" type="button"><i class="fa fa-search"></i>
+											</button>
+										</span>
+									</div>
+								</form>
+							</div>
+							<!-- /.col-lg-6 (nested) -->
+						</div>
+						<!-- /.row (nested) -->
+					</div>
+					<!-- /.panel-body -->
+				</div>
+				<!-- /.panel -->
+			</div>
+
+
+		</div>
+	</div>
+	<script>
+
+
+		$(function () {
+			$('#user').on('click', function (e) {
+				e.stopPropagation();
+				$('#dropdownMenu').toggle();
+			});
+
+			$(document).on('click', function () {
+				$('#dropdownMenu').hide();
+			});
+		});
+		$(document).ready(function () {
+			$('#dataTables-example').DataTable({
+				responsive: true
+			});
+		});
+	</script>
+</body>
+
+</html>
