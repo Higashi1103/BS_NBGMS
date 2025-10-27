@@ -1,0 +1,13 @@
+<form id="insertForm" action="/insertKurasuInfo" method="post">
+	<span>*クラス名前:</span><input id="name" type="text" name="kurasuNamae" class="form-control"></span> <span id="nameError"></span> 
+	<br> <br>
+	<span>*コンテンツ:</span><input id="contents" type="text" name="kurasuKamoku" class="form-control"></span> <span id="contentsError"></span> 
+	<br> <br> 
+	<span>*担当先生:</span><input id="instructor" type="text" name="tantoSensei" class="form-control"></span> <span id="instructorError"></span> 
+	<br> <br> 
+	<span>メモ:</span>
+	<textarea id="memo" name="memo" class="form-control"></textarea>
+	<br> <br> 
+	<input type="submit" value="登録" class="btn btn-success">
+	<input type="button" value="戻る" onclick="location.href='/kurasu'" class="btn btn-warning">
+</form>
