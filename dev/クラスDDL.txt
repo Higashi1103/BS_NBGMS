@@ -1,0 +1,16 @@
+drop table if exists bs_nbgms2025.kurasu_info;
+create table bs_nbgms2025.kurasu_info (
+  KURASU_ID INT not null
+  , KURASU_NAMAE VARCHAR(30) not null
+  , KURASU_KAMOKU VARCHAR(50) not null
+  , TANTO_SENSEI VARCHAR(20) not null
+  , DELETE_FLAG INT default 0 not null
+  , MEMO VARCHAR(100)
+  , TOUROKUBI DATE
+  , KOUSHINBI DATE
+  , SAKUSEISHA VARCHAR(20)
+  , YOBI_1 VARCHAR(200)
+  , YOBI_2 VARCHAR(200)
+  , YOBI_3 VARCHAR(200)
+  , primary key (KURASU_ID)
+)
