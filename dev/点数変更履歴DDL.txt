@@ -1,0 +1,31 @@
+CREATE TABLE tensu_henkou_rireki(
+	rireki_id INT(11) AUTO_INCREMENT PRIMARY KEY COMMENT '履歴ID',
+	gakusei_id INT(11) NOT NULL COMMENT '学生ID',
+	kagen_tensu VARCHAR(10) NOT NULL COMMENT '加減点数',
+	riyu_id INT(11) NOT NULL COMMENT '理由ID（理由マスタ参照）',
+	hassei_bi VARCHAR(10) NOT NULL COMMENT '発生日',
+	bikou VARCHAR(255) COMMENT '備考',
+	delete_flag INT(11) DEFAULT 0 COMMENT '論理削除フラグ（0：有効、1：削除）',
+	yobi_1 VARCHAR(255) COMMENT '予備１',
+	yobi_2 VARCHAR(255) COMMENT '予備２',
+	yobi_3 VARCHAR(255) COMMENT '予備３',
+	tourokubi DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '登録日',
+	tourokusya VARCHAR(50) COMMENT '登録者',
+	kousinbi DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日',
+	kousinsya VARCHAR(50) COMMENT '更新者')
+	ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '点数変更履歴';
+
+CREATE TABLE kagen_riyu (
+	riyu_id INT(11) AUTO_INCREMENT PRIMARY KEY COMMENT '理由ID',
+	gutai_riyu VARCHAR(255) NOT NULL COMMENT '具体理由')
+	ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '加減理由';
+
+INSERT
+	INTO
+	kagen_riyu (gutai_riyu)
+VALUES
+	('遅刻'),
+	('日報未提出'),
+	('テスト不合格'),
+	('テスト優秀'),
+	('その他');
