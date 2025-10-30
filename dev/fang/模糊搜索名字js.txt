@@ -1,0 +1,69 @@
+模糊搜索名字
+SearchNamae.js
+
+$(function() {
+
+	/*モックボックス*/
+	$("#openSearchModal").click(function() {
+		$("#searchModal").modal("show");
+		$("#searchNamae").val("");
+		$("#searchResult").empty();
+	});
+
+	/*あいまい検索*/
+	$("#searchNamae").on("input", function() {
+		var namae = $(this).val();
+		if (namae.trim() === "") {
+			$("#searchResult").empty();
+			return;
+		}
+
+		$.ajax({
+			url: "/tensushousaihenko/searchByNamae",
+			method: "GET",
+			data: { namae: namae },
+			success: function(data) {
+				$("#searchResult").empty();
+				
+				if (data.length === 0) {
+					$("#searchResult").append("<li class='list-group-item error'>該当なし</li>");
+				} else {
+					data.forEach(function(item) {
+						$("#searchResult").append(
+							`<li class='list-group-item search-item' 
+							data-namae='${item.namae}' 
+							data-id='${item.gakuseiId}'
+							data-rireki='${item.rirekiId || ""}'>
+           					 ${item.namae}（ID: ${item.gakuseiId}）
+        					 </li>`
+						);
+					});
+
+					/*検索結果にクリックイベントをバインドする*/
+					$(".search-item").click(function() {
+						var selectedName = $(this).data("namae");
+						var selectedId = $(this).data("id");
+						var selectedRirekiId = $(this).data("rireki");
+
+						$("#namaeInput").val(selectedName);
+						$("#oldGakuseiId").val(selectedId);
+						$("#newGakuseiId").val(selectedId);
+						$("#rirekiIdInput").val(selectedRirekiId || "");
+
+						$(".search-item").removeClass("selected");
+						$(this).addClass("selected");
+						
+						setTimeout(() => {
+							$("#searchModal").modal("hide");
+						}, 500);
+					});
+
+				}
+			},
+			error: function() {
+				$("#searchResult").html("<li class='list-group-item text-danger error'>検索エラー</li>");
+			}
+		});
+	});
+});
+
