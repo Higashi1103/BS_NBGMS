@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<title>技術者管理システム</title>
+<meta charset="utf-8">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+<script
+	src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script
+	src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link
+	href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css"
+	rel="stylesheet">
+
+<style>
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 51px;
+	background-color: #f9f9f9;
+	color: #000000;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	box-sizing: border-box;
+	z-index: 1000;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+a {
+	letter-spacing: 0.05em;
+}
+
+#title {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 18px;
+	color: #777;
+}
+
+#user {
+	position: absolute;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+#dialogBtns {
+	display:flex;
+	justify-content:center;
+}
+
+.center {
+	text-align:center;
+}
+
+.panel-form {
+	display:flex;
+}
+
+.overlay {
+  position: fixed;        /* 固定在视口，而不是文档流 */
+  top: 0;
+  left: 0;
+  width: 100vw;           /* 覆盖整个可视宽度 */
+  height: 100vh;          /* 覆盖整个可视高度 */
+  background: rgba(0,0,0,0.45);  /* 半透明遮罩 */
+  display: flex;          /* 居中内容 */
+  z-index: 9999;          /* 超高层级，保证在所有元素上方 */
+}
+
+.dialog {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  height: 200px;
+  margin-top:15%;
+  margin-left:43%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  z-index: 10000; /* 比遮罩略高，但一般只要父层够高就行 */
+}
+
+.dlgTitle {
+  background-color:#d9534f; 
+  margin-top:0; 
+  margin-bottom:42px; 
+  border-radius:12px 12px 0px 0px; 
+  padding: 10px; text-align:center; 
+  border-bottom:1px solid gray; 
+  color:white
+}
+
+.update {
+	margin-right:20px;
+}
+
+.buttomBtns {
+	margin-right:5px;
+}
+
+.dropdown-menu {
+	display: none;
+	position: absolute;
+	top: 40px;
+	right: 0;
+	transform: translateX(-100px);
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+	min-width: 100px;
+	z-index: 2000;
+}
+
+.dropdown-menu a {
+	display: block;
+	padding: 8px 10px;
+	color: #333;
+	text-decoration: none;
+	font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+	background-color: #f2f2f2;
+}
+
+.sidebar {
+	position: fixed;
+	top: 51px;
+	left: 0;
+	width: 250px;
+	height: calc(100% - 51px);
+	background-color: #f9f9f9;
+	color: rgb(48, 48, 48);
+	box-sizing: border-box;
+	border-right: 1px solid #e5e5e5;
+}
+
+.sidebar-nav div {
+	margin: 0;
+	padding: 10px;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.sidebar-nav div a {
+	color: #454545;
+	font-size: 14px;
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+}
+
+.sidebar-nav div:hover {
+	background-color: #e6e6e6;
+	color: #fff;
+}
+
+.main-content {
+	margin-top: 30px;
+	margin-left: 240px;
+	padding: 40px;
+	min-height: calc(100vh - 51px);
+	background-color: #fff;
+	display: flex;
+	justify-content: center;
+}
+
+#shousaitable {
+	width: 1060px;
+	table-layout: auto;
+}
+</style>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="#">ログアウト</a>
+			</div>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png"
+						height="18px" style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png"
+						height="18px" style="margin-right: 5px;">学生情報</a>
+				</div>
+				<div>
+					<a th:href="@{/tensu}"><img src="/image/pointo.png"
+						height="18px" style="margin-right: 5px;">ポイント履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/hiaringu}"><img src="/image/hiaringu.png"
+						height="18px" style="margin-right: 5px;">ヒアリング履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png"
+						height="18px" style="margin-right: 5px;">出力</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="main-content">
+		<div id="table-content">
+			<div class="col-lg-12">
+				<div id="overlay" class="overlay" role="dialog" aria-modal="true">
+					<div class="dialog" tabindex="-1">
+						<h4 class="dlgTitle">削除選択</h4>
+						<div class="center">
+							<h5 th:text="${singleKurasu.kurasuNamae} + '組を削除しますが、よろしいですか？'"></h5>
+							<br>
+						</div>
+						<div id="dialogBtns">
+							<form id="delete" th:action="@{/deleteKurasuInfo}" method="post" class="update">
+								<input type="hidden" name="kurasuId" th:value="${singleKurasu.kurasuId}">
+								<input id="btnOk" type="submit" value="確定"	class="btn btn-success">
+							</form>
+							<input id="btnNo" type="button" value="取消" class="btn btn-warning">
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default" style="width: 1090px;">
+					<div class="panel-heading">クラス詳細情報</div>
+					<div id="panel-body" class="panel-body">
+						<div>
+							<span>クラス名前：</span><input type="text" th:value="${singleKurasu != null ? singleKurasu.kurasuNamae     : ''}" disabled class="form-control">
+							<br>
+							<span>コンテンツ：</span><input type="text" th:value="${singleKurasu != null ? singleKurasu.kurasuKamoku     : ''}" disabled class="form-control">
+							<br>
+							<span>担当先生：</span><input type="text" th:value="${singleKurasu != null ? singleKurasu.tantoSensei     : ''}" disabled class="form-control">
+							<br>
+							<span>メモ：</span><input type="text" th:value="${singleKurasu != null ? singleKurasu.memo     : ''}" disabled class="form-control">
+							<br>
+							<span>登録日：</span><input type="text" th:value="${singleKurasu != null ? #dates.format(singleKurasu.tourokubi, 'yyyy/MM/dd')     : ''}" disabled class="form-control">
+							<br>
+							<span>更新日：</span><input type="text" th:value="${singleKurasu != null ? #temporals.format(singleKurasu.koushinbi, 'yyyy/MM/dd')     : ''}" disabled class="form-control">
+							<br>
+							<span>作成者：</span><input type="text" th:value="${singleKurasu != null ? singleKurasu.sakuseisha     : ''}" disabled class="form-control">
+							<br>
+							</div>
+						<div class="panel-form">
+							<form id="update" th:action="@{/updatePage}" method="post">
+								<input type="hidden" name="kurasuId" th:value="${singleKurasu.kurasuId}"> 
+								<input type="submit" value="更新" class="btn btn-info buttomBtns">
+							</form>
+							<input id="btnDel" type="button" value="削除" class="btn btn-danger buttomBtns">
+							<input type="button" value="戻る" onclick="location.href='/kurasu'" class="btn btn-warning">
+						</div>
+						<!-- /.row (nested) -->
+					</div>
+					<!-- /.panel-body -->
+				</div>
+				<!-- /.panel -->
+			</div>
+		</div>
+	</div>
+	<script>
+		$(function() {
+			$('#overlay').hide();
+			
+			$('#btnDel').on('click', function(e) {
+				e.preventDefault();
+				$('#overlay').fadeIn(270, function() {$('#overlay').show()});
+				$('#btnOk').focus();
+				
+				$('#overlay').on('keydown.focusTrap', function(e) {
+					if(e.key === 'Tab') {
+						const active = document.activeElement;
+						
+						if(!e.shiftKey && active === $('#btnNo')[0]) {
+							e.preventDefault();
+							$('#btnOk').focus();
+						} else if(e.shiftKey && active === $('#btnOk')[0]) {
+							e.preventDault();
+							$('#btnNo').focus();
+						}
+					} else if(e.key === 'Escape') {
+						$('#overlay').hide();
+						$('#overlay').off('keydown.focusTrap');
+					}
+				})				
+			})
+			
+			$('#delete').on('submit', function(e) {
+				e.preventDefault();
+				
+				$('#overlay').hide();
+				$('#overlay').off('keydown.focusTrap');
+				
+				const $form = $(this);
+				$.ajax({
+					url:$form.attr('action'),
+					type:$form.attr('method') || 'post',
+					data:$form.serialize(),
+					success:function() {
+						$('#panel-body').html(
+							`<div class='center'>
+								<p>削除しました</p>
+								<input type='button' value='戻る' onclick="location.href='/kurasu'" class="btn btn-warning">
+							</div>`		
+						)
+					},
+					error:function() {
+						alert('削除出来ませんでした')
+					}
+				})
+			})
+			
+			$('#btnNo').on('click', function() {
+				$('#overlay').hide();
+				$('#overlay').off('keydown.focusTrap');
+			})
+		})
+	</script>
+</body>
+
+</html>
