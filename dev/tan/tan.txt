@@ -1,0 +1,49 @@
+CSS:样式
+
+.overlay {
+  display: none;
+  position: fixed;        /* 固定在视口，而不是文档流 */
+  top: 0;
+  left: 0;
+  width: 100vw;           /* 覆盖整个可视宽度 */
+  height: 100vh;          /* 覆盖整个可视高度 */
+  background: rgba(0,0,0,0.45);  /* 半透明遮罩 */
+  place-items: center;
+  z-index: 9999;          /* 超高层级，保证在所有元素上方 */
+}
+
+.dialog {
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  height: auto;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 50px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  z-index: 10000; /* 比遮罩略高，但一般只要父层够高就行 */
+}
+
+.dlgTitle {
+  background-color:#d9534f; 
+  margin-top:0; 
+  margin-bottom:42px; 
+  border-radius:12px 12px 0px 0px; 
+  padding: 10px; text-align:center; 
+  border-bottom:1px solid gray; 
+  color:white
+}
+
+弹框框架:
+<div id="overlay" class="overlay" role="dialog" aria-modal="true">
+						<div id="dialog" class="dialog" tabindex="-1">
+							<h4 class="dlgTitle"></h4>
+							<div class="center">
+							</div>
+							<div id="dialogBtns">
+								<form>
+								</form>
+							</div>
+						</div>
+					</div>
+
