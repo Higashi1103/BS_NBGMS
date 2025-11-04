@@ -1,0 +1,33 @@
+<!-- 三表联查 : 学生一览表画面内容 -->
+	<select id="getGakuseiKurasuTensuList"
+			parameterType="com.example.demo.entity.Gakusei"
+			resultMap="GakuseiKurasuTensuFullMap">
+	
+	SELECT
+		g.gakusei_id,
+		g.namae,
+		g.seibetsu,
+		g.tensu,
+		k.kurasu_namae,
+		t.kagen_tensu
+	FROM gakusei AS g
+	LEFT JOIN kurasu_info AS k
+		ON g.kurasu_id = k.kurasu_id
+	LEFT JOIN tensu_henkou_rireki AS t
+		ON g.gakusei_id = t.gakusei_id
+	WHERE g.DELETE_FLAG = 0
+	ORDER BY g.gakusei_id
+	
+	</select>
+
+-----------------------------------------------------------
+@service
+// 调用 Mapper 的学生一览表画面内容的方法
+	public List<Gakusei> getGakuseiKurasuTensuList(Gakusei gakusei) {
+		return gakuseiMapper.getGakuseiKurasuTensuList(gakusei);
+	}
+
+-------------------------------------------------------------------
+@Mapper
+// 三表联查 : 显示学生一览表画面内容
+	List<Gakusei> getGakuseiKurasuTensuList(Gakusei gakusei);
