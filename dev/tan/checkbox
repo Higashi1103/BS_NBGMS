@@ -1,0 +1,54 @@
+<div class="form-group" id="tantousya-group" style="position: relative;">
+    <label>担当者：
+        <span class="span-css">必須</span>
+    </label>
+    <input class="form-control" type="text" id="tantousya" name="tantousya"
+        placeholder="クリックして選択" readonly>
+    <span class="error-message">担当者を選択してください</span>
+
+    <!-- 担当者选择弹窗 -->
+    <div id="selectModal" class="select-modal"
+        style="display: none; position: absolute; top: 100%; left: 0;
+               background: white; border: 1px solid #ccc; padding: 10px;
+               z-index: 2000; width: 200px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <div><label><input type="checkbox" value="神田先生"> 神田先生</label></div>
+        <div><label><input type="checkbox" value="呉先生"> 呉先生</label></div>
+        <div><label><input type="checkbox" value="他人"> 他人</label></div>
+        <button type="button" class="btn btn-primary btn-sm mt-2"
+            onclick="confirmSelection()">確定</button>
+    </div>
+</div>
+
+
+
+=======================JS代碼======================
+
+$(function () {
+	$('#tantousya').click(function (e) {
+		$('#selectModal').toggle();
+		e.stopPropagation();
+	});
+
+	//"确定"按钮事件
+	$('#selectModal button.btn-primary').click(function () {
+		var selected = [];
+		$('#selectModal input[type="checkbox"]:checked').each(function () {
+			selected.push($(this).val());
+		});
+		$('#tantousya').val(selected.join(', '));
+		$('#selectModal').hide();
+
+		//清除错误提示
+		if (selected.length > 0) {
+			$('#tantousya-group').removeClass('has-error');
+			$('#tantousya-group .error-message').hide();
+		}
+	});
+
+	//点击其他地方关闭选择框
+	$(document).click(function (event) {
+		if (!$(event.target).closest('#tantousya, #selectModal').length) {
+			$('#selectModal').hide();
+		}
+	});
+});
