@@ -1,0 +1,43 @@
+<!-- 三表联查 : 学生一览表画面内容 -->
+	<select id="getGakuseiKurasuTensuList"
+			parameterType="com.example.demo.entity.Gakusei"
+			resultMap="GakuseiKurasuTensuFullMap">
+	
+	SELECT
+		g.gakusei_id,
+		g.namae,
+		g.seibetsu,
+		g.tensu,
+		k.kurasu_namae,
+		t.kagen_tensu
+	FROM gakusei AS g
+	LEFT JOIN kurasu_info AS k
+		ON g.kurasu_id = k.kurasu_id
+	LEFT JOIN tensu_henkou_rireki AS t
+		ON g.gakusei_id = t.gakusei_id
+	WHERE g.DELETE_FLAG = 0
+	ORDER BY g.gakusei_id
+	
+	</select>
+
+
+
+<!-- 学生情报更新处理 -->
+	<update id="updateGakuseiInfo"
+			parameterType="com.example.demo.entity.Gakusei">
+			
+			UPDATE gakusei
+			<set>
+				<if test="namae != null">namae = #{namae},</if>
+        		<if test="seibetsu != null">seibetsu = #{seibetsu},</if>
+        		<if test="seinengappi != null">seinengappi = #{seinengappi},</if>
+        		<if test="saishuGakureki != null">saishu_gakureki = #{saishuGakureki},</if>
+        		<if test="gogakuryoku != null">gogakuryoku = #{gogakuryoku},</if>
+        		<if test="tensu != null">tensu = #{tensu},</if>
+        		<if test="hyouka != null">hyouka = #{hyouka},</if>
+        		<if test="sonota != null">sonota = #{sonota},</if>
+        		<if test="kurasuId != null">kurasu_id = #{kurasuId},</if>
+			</set>	
+			WHERE gakusei_id = #{gakuseiId}
+			
+	</update>
