@@ -1,0 +1,38 @@
+// ✅ Ajax 提交删除请求  第二段弹框
+                $('#confirmDelete').one('click', function () {
+                    $.ajax({
+                        url: '/gakusei/deleteGakuseiInfo',
+                        type: 'POST',
+                        data: { gakuseiId: gakuseiId },
+                        success: function () {
+                            $('#overlay').fadeIn({ duration: 270, start: function () { $(this).css({ 'display': 'grid', 'place-items': 'center' }) } });
+                            $('#overlay').html(`
+									<div id="dialog" class="dialog" tabindex="-1">
+										<h4 class="dlgTitleMsg">通知</h4>	
+										<div style="text-align:center">
+											<p>削除できました。</p >
+											<br>
+											<input id='subReturnDelete' type='button' value='確認' onclick="location.href='/gakusei'" class="btn btn-warning">
+										</div>	
+									</div>	
+										`);
+                            $('#subReturnDelete').focus();
+                            $('#overlay').on('keydown.focusTrap', function (e) {
+                                if (e.key === 'Tab') {
+                                    const active = document.activeElement;
+
+                                    if (!e.shiftKey && active === $('#subReturnDelete')[0]) {
+                                        e.preventDefault();
+                                        $('#subReturnDelete').focus();
+                                    } else if (e.shiftKey && active === $('#subReturnDelete')[0]) {
+                                        e.preventDefault();
+                                        $('#subReturnDelete').focus();
+                                    }
+                                }
+                            })
+                        },
+                        error: function () {
+                            alert('削除できませんでした');
+                        }
+                    });
+                });
