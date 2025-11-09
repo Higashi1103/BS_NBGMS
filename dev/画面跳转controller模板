@@ -1,0 +1,11 @@
+用在画面跳转的controller上
+
+
+模板:
+@GetMapping("/gakusei")
+    public String gakusei(HttpSession session, Model model) {
+        // 从 session 读取登录用户信息
+        Yuza loginUser = (Yuza) session.getAttribute("currentYuza");
+        model.addAttribute("loginUser", loginUser);
+        return "gakusei/gakusei"; // 返回模板路径
+    }
