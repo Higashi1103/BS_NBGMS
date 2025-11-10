@@ -1,5 +1,6 @@
 package com.example.demo.controller.hiaringu;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.entity.Yuza;
 import com.example.demo.entity.hiaringu.JinjiHiaringu;
 import com.example.demo.service.hiaringu.JinjiHiaringuService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/hiaringu")
@@ -66,19 +70,29 @@ public class SyousaiController {
         return "hiaringu/hiaringuKoushin";
     }
     
-    @PostMapping("/update")
+   @PostMapping("/update")
     @ResponseBody
-    public Map<String, Object> updateHiaringu(@RequestBody JinjiHiaringu hiaringu){
-    	Map<String, Object> result = new HashMap<>();
-    	try {
+    public Map<String, Object> updateHiaringu(
+            @RequestBody JinjiHiaringu hiaringu,
+            HttpSession session) {       
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            //从 session 获取登录用户
+            Yuza loginUser = (Yuza) session.getAttribute("currentYuza");
+         
+            //设置更新者信息
+            hiaringu.setKoushinsha(loginUser.getYuzaNamae());
+            hiaringu.setKoushinNichiji(LocalDateTime.now());            
+            //执行更新
             int rows = hiaringuService.update(hiaringu);
             result.put("success", rows > 0);
-            result.put("message", rows > 0 ? "更新成功" : "更新失敗");
+            result.put("message", rows > 0 ? "更新成功" : "更新失敗");           
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
-        }
+            e.printStackTrace();  //添加错误日志输出
+        }      
         return result;
     }
 }
-
