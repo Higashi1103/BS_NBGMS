@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
 import com.example.demo.dito.hiaringu.GakuseiDTO;
-import com.example.demo.entity.hiaringu.Gakusei;
+import com.example.demo.entity.hiaringu.GakuseiKurasu;
 import com.example.demo.entity.hiaringu.JinjiHiaringu;
 
 @Mapper
@@ -29,7 +29,7 @@ public interface JinjiHiaringuMapper {
 	    List<Map<String, Object>> findAllWithStudentInfo();
 
 	    //根据学生姓名查找学生ID和班级ID
-	    Gakusei findGakuseiByName(String namae);
+	    GakuseiKurasu findGakuseiByName(String namae);
 	    //插入谈话记录
 	    int insertHiaringu(JinjiHiaringu hiaringu);
 	    
@@ -40,3 +40,5 @@ public interface JinjiHiaringuMapper {
 	 // 新增：模糊搜索学生
 	    List<GakuseiDTO> searchGakuseiByNamae(@Param("keyword") String keyword);
 }
+
+
