@@ -10,7 +10,9 @@ import com.example.demo.entity.Gakusei;
 @Mapper
 public interface GakuseiMapper {
 	
-    Gakusei getGakuseiDetail(@Param("gakuseiId") Integer gakuseiId);
+	@Select("SELECT gakusei_id AS gakuseiId, namae, tensu FROM gakusei WHERE gakusei_id = #{gakuseiId}")
+    Gakusei getGakuseiTensu(@Param("gakuseiId") Integer gakuseiId);
 
-    int updateGakuseiInfo(@Param("gakusei") Gakusei gakusei);	
+    @Update("UPDATE gakusei SET tensu = #{gakusei.tensu} WHERE gakusei_id = #{gakusei.gakuseiId}")
+    int updateGakuseiTensu(@Param("gakusei") Gakusei gakusei);
 }
