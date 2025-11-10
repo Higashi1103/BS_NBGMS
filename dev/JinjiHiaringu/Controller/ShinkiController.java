@@ -53,3 +53,4 @@ public class ShinkiController {
         return service.searchByNamae(keyword);
     }
 }
+
