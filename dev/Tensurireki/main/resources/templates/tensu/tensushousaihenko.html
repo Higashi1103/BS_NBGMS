@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<title>技術者管理システム</title>
+<meta charset="utf-8">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+<script
+	src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script
+	src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link
+	href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css"
+	rel="stylesheet">
+	
+<script th:inline="javascript">
+	const alertType = /*[[${alertType}]]*/null;
+	const alertMsg = /*[[${alertMsg}]]*/null;
+</script>
+
+<!-- 入力確認のJS-->
+<script th:src="@{/js/inputCheck.js}"></script>
+<!-- 確認のJS-->
+<script th:src="@{/js/CommonConfirm.js}"></script>
+<!-- 通知のJS-->
+<script th:src="@{/js/AlertMessage.js}"></script>
+
+<!-- 確認のCSS-->
+<link th:href="@{/css/confirmModal.css}" rel="stylesheet">
+<!-- 通知のCSS -->
+<link th:href="@{/css/AlertModal.css}" rel="stylesheet">
+
+<style>
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 51px;
+	background-color: #f9f9f9;
+	color: #000000;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	box-sizing: border-box;
+	z-index: 1000;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+a {
+	letter-spacing: 0.05em;
+}
+
+#title {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 18px;
+	color: #777;
+}
+
+#user {
+	position: absolute;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+.dropdown-menu {
+	display: none;
+	position: absolute;
+	top: 40px;
+	right: 0;
+	transform: translateX(-100px);
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+	min-width: 100px;
+	z-index: 2000;
+}
+
+.dropdown-menu a {
+	display: block;
+	padding: 8px 10px;
+	color: #333;
+	text-decoration: none;
+	font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+	background-color: #f2f2f2;
+}
+
+.sidebar {
+	position: fixed;
+	top: 51px;
+	left: 0;
+	width: 250px;
+	height: calc(100% - 51px);
+	background-color: #f9f9f9;
+	color: rgb(48, 48, 48);
+	box-sizing: border-box;
+	border-right: 1px solid #e5e5e5;
+}
+
+.sidebar-nav div {
+	margin: 0;
+	padding: 10px;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.sidebar-nav div a {
+	color: #454545;
+	font-size: 14px;
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+}
+
+.sidebar-nav div:hover {
+	background-color: #e6e6e6;
+	color: #fff;
+}
+
+.main-content {
+	margin-top: 30px;
+	margin-left: 240px;
+	padding: 40px;
+	min-height: calc(100vh - 51px);
+	background-color: #fff;
+	display: flex;
+	justify-content: center;
+}
+
+#shousaitable {
+	width: 1060px;
+	table-layout: auto;
+}
+
+/*モックボックス*/
+.search-item.selected {
+	background-color: #74B666;
+	color: white;
+}
+
+/* 有 “必须” 字段的 span 样式 */
+.span-css {
+	background-color: #d9534f;
+	color: #fff;
+	font-size: 12px;
+	padding: 1px 5px;
+	border-radius: 3px;
+	margin-left: 5px;
+	align-self: center; /* 与文字垂直对齐 */
+}
+
+/* label 基本样式 */
+.label-css {
+	display: flex;
+	align-items: center; /* 强制让文字和“必須”标签垂直居中对齐 */
+	margin-bottom: 4px; /* label 和输入框间距 */
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0.03em;
+}
+
+.error {
+	color: red;
+}
+
+.resizable-height {
+	width: 100%;
+	min-height: 100px;
+	max-height: 300px;
+	resize: vertical;
+}
+
+.float-right {
+	float: right;
+}
+</style>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="#">ログアウト</a>
+			</div>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png"
+						height="18px" style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png"
+						height="18px" style="margin-right: 5px;">学生情報</a>
+				</div>
+				<div>
+					<a th:href="@{/tensu}"><img src="/image/pointo.png"
+						height="18px" style="margin-right: 5px;">ポイント履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/hiaringu}"><img src="/image/hiaringu.png"
+						height="18px" style="margin-right: 5px;">ヒアリング履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png"
+						height="18px" style="margin-right: 5px;">出力</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="main-content">
+		<div id="table-content">
+			<div class="col-lg-12">
+				<div class="panel panel-default" style="width: 1090px;">
+					<div class="panel-heading">履歴変更</div>
+					<div class="panel-body">
+						<div class="row">
+
+							<div class="col-lg-12">
+								<form id="updateForm" th:object="${tensuShousaiHenkoList}"
+									method="post" th:action="@{/tensushousaihenko/update}">
+
+									<!-- 隠した学生ID -->
+									<input type="hidden" th:field="*{gakuseiId}"
+										id="gakuseiIdInput" name="gakuseiId">
+
+									<!-- 更新用の旧・新ID -->
+									<input type="hidden" th:field="*{oldGakuseiId}"
+										id="oldGakuseiId" name="oldGakuseiId"> <input
+										type="hidden" th:field="*{newGakuseiId}" id="newGakuseiId"
+										name="newGakuseiId">
+
+									<!-- 履歴ID -->
+									<input type="hidden" th:field="*{rirekiId}" id="rirekiIdInput">
+
+									<div class="form-group" id="gakuseiFormGroup">
+										<label class="label-css">学生名前<span class="span-css">表示のみ</span></label>
+										<input id="namaeInput" class="form-control"
+											th:field="*{namae}" readonly>
+									</div>
+
+									<div class="form-group" id="kagenFormGroup">
+										<label class="label-css">加減点数<span class="span-css">必須</span></label>
+										<input id="kagenTensuInput" class="form-control"
+											th:field="*{kagenTensu}" placeholder="加減点数を入力してください"
+											maxlength="6"> <span id="msg2" class="error"></span>
+										<span id="kagenTensuCount" class="float-right"><0/6></span>
+									</div>
+
+
+									<div class="form-group">
+										<label class="label-css">加減理由<span class="span-css">必須</span></label>
+										<select class="form-control" id="gutaiRiyuSelect"
+											th:field="*{riyuId}">
+											<option value="1">遅刻・早退</option>
+											<option value="2">打刻忘れ</option>
+											<option value="3">授業中のスマホ・居眠り</option>
+											<option value="4">日報未提出・無断未報告</option>
+											<option value="5">テスト高得点</option>
+											<option value="6">テスト不合格</option>
+											<option value="7">ゴミ出し忘れ</option>
+											<option value="8">掃除当番忘れ</option>
+											<option value="9">その他</option>
+										</select>
+
+										<!-- 隠した理由ID -->
+										<input type="hidden" th:field="*{riyuId}" id="riyuIdInput"
+											th:value="${tensuShousaiHenkoList.riyuId}">
+									</div>
+
+									<div class="form-group">
+										<label class="label-css">発生日<span class="span-css">必須</span></label>
+										<input class="form-control" type="date" th:field="*{hasseiBi}"
+											id="hasseiBiInput" placeholder="発生日を入力してください">
+									</div>
+									<div class="form-group">
+										<label class="label-css">備考</label>
+										<textarea class="form-control resizable-height"
+											th:field="*{bikou}" maxlength="500"></textarea>
+										<span id="bikouCount" class="float-right"><0/500></span>
+									</div>
+
+									<!-- 変更確認モーダル -->
+									<div id="confirmModal" class="modal fade" tabindex="-1"
+										role="dialog">
+										<div class="modal-dialog confirm-modal-dialog">
+											<div class="modal-content">
+
+												<div class="modal-header">
+													<h4 class="modal-title">確認</h4>
+												</div>
+
+												<div class="modal-body">
+													<label>以下の内容をご確認の上、</label>
+													<label>「更新」ボタンを押してください。</label><br><br>
+													
+													<label>名前：</label><span id="confirmNamae"></span><br>
+													<label>加減点数：</label><span id="confirmKagen"></span><br>
+													<label>加減理由：</label><span id="confirmRiyu"></span><br>
+													<label>発生日：</label><span id="confirmHasseiBi"></span>
+												</div>
+
+												<div class="modal-footer">
+													<button type="button" id="confirmSubmit"
+														class="btn btn-primary">更新</button>
+													<button type="button" class="btn btn-warning"
+														data-dismiss="modal">キャンセル</button>
+
+												</div>
+
+											</div>
+										</div>
+									</div>
+									
+									<!-- 二次ポップアップ -->
+									<div class="modal fade" id="alertModal" tabindex="-1"
+										role="dialog" aria-hidden="true">
+										<div class="modal-dialog custom-modal-dialog">
+											<div class="modal-content">
+
+												<div class="modal-header custom-modal-header">
+													<h4 class="modal-title">通知</h4>
+												</div>
+
+												<div class="modal-body custom-modal-body">
+													<p id="dialogMessage"></p>
+												</div>
+
+												<div class="modal-footer custom-modal-footer">
+													<button type="button" id="confirmReturn"
+														class="btn btn-warning">確認</button>
+												</div>
+
+											</div>
+										</div>
+									</div>
+									
+									
+								</form>
+							</div>
+						</div>
+
+						<div class="text-right" style="margin-top: 15px;">
+							<button type="button" class="btn btn-primary"
+								id="openConfirmModal" style="margin-right: 20px;">更新</button>
+
+							<input type="button" value="戻る" onclick="history.go(-1)"
+								class="btn btn-warning">
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$(function() {
+
+			$('#kagenTensuInput').on('input', function() {
+				const max = 6;
+				const count = $(this).val().length;
+				$('#kagenTensuCount').text('<' + count + '/' + max + '>');
+			});
+
+			$('#bikouInput').on('input', function() {
+				const max = 500;
+				const count = $(this).val().length;
+				$('#bikouCount').text('<' + count + '/' + max + '>');
+			});
+
+			const currentRiyuId = $("#gutaiRiyuSelect").val();
+			$("#riyuIdInput").val(currentRiyuId);
+
+			$("#gutaiRiyuSelect").change(function() {
+				const newVal = $(this).val();
+				$("#riyuIdInput").val(newVal);
+			});
+
+			$('#user').on('click', function(e) {
+				e.stopPropagation();
+				$('#dropdownMenu').toggle();
+			});
+
+			$(document).on('click', function() {
+				$('#dropdownMenu').hide();
+			});
+		});
+		$(document).ready(function() {
+			$('#dataTables-example').DataTable({
+				responsive : true
+			});
+		});
+	</script>
+</body>
+
+</html>
+

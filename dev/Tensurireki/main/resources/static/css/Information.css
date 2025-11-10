@@ -1,0 +1,45 @@
+@charset "UTF-8";
+
+.overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.45);
+	display: grid;
+	place-items: center;
+	z-index: 9999;
+}
+
+.dialog {
+	max-width: 450px;
+	width: 90%;
+	height: 150px;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	z-index: 10000;
+	margin: 300px auto;
+	background-color: white;
+}
+
+.dialog .dlgTitle {
+	background-color: #31b0d5; 
+	color: #fff;
+	font-weight: bold;
+	padding: 8px 15px;
+	border-radius: 5px 5px 0 0;
+	margin: 0 -15px 10px -15px;
+	text-align: left;
+}
+
+#dialogMessage {
+	padding: 5px 0;
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: calc(100% - 50px);
+}

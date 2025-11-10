@@ -1,0 +1,41 @@
+@charset "UTF-8";
+
+.modal-dialog.custom-modal-dialog {
+  max-width: 420px;
+  width: 90%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  position: fixed;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.modal-header.custom-modal-header {
+  background-color: #31b0d5 !important;
+  color: white !important;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: left !important;
+  padding: 15px 20px !important;
+  border-bottom: none !important;
+}
+
+.modal-body.custom-modal-body {
+  background-color: #fff !important;
+  padding: 20px !important;
+  text-align: center;
+}
+
+.modal-footer.custom-modal-footer {
+  background-color: #fff !important;
+  padding: 0 15px 20px 15px !important;
+  border-top: none !important;
+  text-align: center !important;
+}
+
+/*.modal-footer.custom-modal-footer .btn {*/
+/*  min-width: 100px;}*/
+
+
