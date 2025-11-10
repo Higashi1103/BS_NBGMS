@@ -18,7 +18,7 @@ BS_NBGMS2025 [boot] [devtools]
         │               │       └── GakuseiDTO.java
         │               ├── entity
         │               │   └── hiaringu
-        │               │       ├── Gakusei.java
+        │               │       ├── GakuseiKurasu.java
         │               │       └── JinjiHiaringu.java
         │               ├── mapper
         │               │     └── hiaringu
