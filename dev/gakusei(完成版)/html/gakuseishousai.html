@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>技術者管理システム</title>
+    <meta charset="utf-8">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 51px;
+            background-color: #f9f9f9;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        a {
+            letter-spacing: 0.05em;
+        }
+
+        #title {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #777;
+        }
+
+        #user {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            transform: translateX(-100px);
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            min-width: 100px;
+            z-index: 2000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f2f2f2;
+        }
+
+
+        .sidebar {
+            position: fixed;
+            top: 51px;
+            left: 0;
+            width: 250px;
+            height: calc(100% - 51px);
+            background-color: #f9f9f9;
+            color: rgb(48, 48, 48);
+            box-sizing: border-box;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        .sidebar-nav div {
+            margin: 0;
+            padding: 10px;
+            border-bottom: 1px solid #e5e5e5;
+
+        }
+
+        .sidebar-nav div a {
+            color: #454545;
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-nav div:hover {
+            background-color: #e6e6e6;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-top: 30px;
+            margin-left: 240px;
+            padding: 40px;
+            min-height: calc(100vh - 51px);
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+        }
+
+        #shousaitable {
+            width: 1060px;
+            table-layout: auto;
+        }
+
+        /* 文本框标题和文本框间距 的样式 */
+        .form-group span {
+            display: inline-block;
+            margin-bottom: 6px;
+            /* 控制文字和输入框的间距 */
+        }
+
+        /* 弹框样式 */
+        .overlay {
+            display: none;
+            position: fixed;
+            /* 固定在视口，而不是文档流 */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            /* 覆盖整个可视宽度 */
+            height: 100vh;
+            /* 覆盖整个可视高度 */
+            background: rgba(0, 0, 0, 0.45);
+            /* 半透明遮罩 */
+            place-items: center;
+            z-index: 9999;
+            /* 超高层级，保证在所有元素上方 */
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 12px;
+            width: 400px;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-bottom: 50px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            /* 比遮罩略高，但一般只要父层够高就行 */
+        }
+
+        .dlgTitle {
+            background-color: #d9534f;
+            margin-top: 0;
+            margin-bottom: 42px;
+            border-radius: 12px 12px 0px 0px;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid gray;
+            color: white
+        }
+
+        .dlgTitleMsg {
+            background-color: #5bc0de;
+            margin-top: 0;
+            margin-bottom: 42px;
+            border-radius: 12px 12px 0px 0px;
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            color: white
+        }
+
+        .dlgTitleConfirm {
+            background-color:#f0ad4e; 
+            margin-top:0; 
+            margin-bottom:42px; 
+            border-radius:12px 12px 0px 0px;
+            padding: 10px;
+            border-bottom:1px solid gray; 
+            color:white
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .update {
+            margin-right: 15px;
+        }
+
+        .margin-left {
+            margin-left: auto;
+        }
+
+        .margin-bottom {
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .float-right {
+            float: right;
+        }
+        
+        /* textarea 固定长度，只能拉高度 */
+        .resizable-height {
+			width: 100%;
+			min-height: 100px;
+			max-height: 300px;
+			resize: vertical;
+		}
+    </style>
+</head>
+
+<body>
+    <!-- ヘッド -->
+    <nav class="navbar" style="margin-bottom: 0">
+        <div id="title">技術者管理システム</div>
+
+        <!-- ログアウトバタン -->
+        <div id="user">
+            <img src="/image/user.png" height="25px">
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="#">ログアウト</a>
+            </div>
+        </div>
+
+        <!-- 左ナビ -->
+        <div class="sidebar">
+            <div class="sidebar-nav">
+                <div>
+                    <a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+                            style="margin-right: 5px;">クラス情報</a>
+                </div>
+                <div>
+                    <a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+                            style="margin-right: 5px;">学生情報</a>
+                </div>
+                <div>
+                    <a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
+                            style="margin-right: 5px;">ポイント履歴</a>
+                </div>
+                <div>
+                    <a th:href="@{/hiaringu}"><img src="/image/hiaringu.png" height="18px"
+                            style="margin-right: 5px;">ヒアリング履歴</a>
+                </div>
+                <div>
+                    <a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png" height="18px"
+                            style="margin-right: 5px;">出力</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div id="table-content">
+            <div class="col-lg-12">
+                <div class="panel panel-default" style="width: 1090px;">
+                    <div class="panel-heading">
+                        学生一覧
+                    </div>
+                    <div id="panel-body" class="panel-body">
+
+                        <form id="insertForm">
+
+                            <!-- 学生ID (隐藏) -->
+                            <input id="gakuseiId" type="hidden" name="gakuseiId" class="form-control"
+                                th:value="${gakuseiDetail.gakuseiId}">
+
+                            <div class="row">
+                                <!-- 左側 -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <!-- 名前 -->
+                                        <label>名前:</label>
+                                        <input type="text" id="namae" class="form-control" th:value="${gakuseiDetail.namae}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 性別 -->
+                                        <label>性別:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.seibetsu}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 生年月日 -->
+                                        <label>生年月日:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.seinengappi}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 最終学歴 -->
+                                        <label>最終学歴:</label>
+                                        <input type="text" class="form-control"
+                                            th:value="${gakuseiDetail.saishuGakureki}" disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 語学力 -->
+                                        <label>語学力:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.gogakuryoku}"
+                                            disabled>
+                                    </div>
+                                </div>
+
+                                <!-- 右側 -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <!-- 点数 -->
+                                        <label>点数:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.tensu}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 班級 -->
+                                        <label>班級:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.kurasuNamae}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- 評価 -->
+                                        <label>評価:</label>
+                                        <input type="text" class="form-control" th:value="${gakuseiDetail.hyouka}"
+                                            disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <!-- その他（メモ） -->
+                                        <label>備考:</label>
+                                        <textarea class="form-control resizable-height" rows="3" th:text="${gakuseiDetail.sonota}"
+                                            disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 更新／削除/戻るボタン -->
+                            <!-- 按钮居右对齐 -->
+                            <div class="text-right" style="margin-top: 15px;">
+                                <input type="button" value="更新"
+                                    th:onclick="|location.href='@{/gakusei/update(gakuseiId=${gakuseiDetail.gakuseiId})}'|"
+                                    class="btn btn-info" style="margin-right: 15px;">
+
+                                <input type="button" value="削除" id="deleteBtn" class="btn btn-danger"
+                                    style="margin-right: 15px;">
+
+                                <input type="button" value="戻る" th:onclick="|location.href='@{/gakusei}'|"
+                                    class="btn btn-warning">
+                            </div>
+
+                        </form>
+                    </div>
+                    <!-- 弹框框架 -->
+                    <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+                        <div id="dialog" class="dialog" tabindex="-1">
+                            <h4 class="dlgTitle">入力項目確認</h4>
+                            <div class="center"></div>
+                            <div id="dialogBtns">
+                                <input id="confirmDelete" type="button" value="削除" class="btn btn-danger">
+                                <input id="returnDelete" type="button" value="キャンセル" class="btn btn-warning">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+
+            // ▼ 用户菜单 ▼
+            $('#user').on('click', function (e) {
+                e.stopPropagation();
+                $('#dropdownMenu').toggle();
+            });
+            $(document).on('click', function () {
+                $('#dropdownMenu').hide();
+            });
+
+            // ▼ 削除ボタンクリック時 ▼
+            $('#deleteBtn').click(function () {
+                const gakuseiId = $('#gakuseiId').val();
+                const namae = $('#namae').val();
+
+                // 弹框显示（只在点击后执行）
+                $('#overlay').fadeIn({
+                    duration: 270,
+                    start: function () {
+                        $(this).css({ display: 'grid', 'place-items': 'center' });
+                    }
+                });
+
+                // 动态填入弹窗内容  第一段弹框
+                $('#overlay').html(`
+                    <div id="dialog" class="dialog" tabindex="-1">
+                        <h4 class="dlgTitleConfirm">確認</h4>
+                        <div class="center">
+                            <p>${namae}の学生情報を削除しますが、よろしいですか？</p>
+                    </div>
+                    <br>
+                    <div class="center">
+                        <input id="confirmDelete" type="button" value="削除" class="btn btn-danger" style="margin-right:20px;">
+                        <input id="returnDelete" type="button" value="キャンセル" class="btn btn-warning">
+                </div>
+            </div>
+        `);
+
+                // 聚焦第一个按钮
+                $('#confirmDelete').focus();
+
+                // Tab / ESC 控制
+                $('#overlay').on('keydown.focusTrap', function (e) {
+                    const active = document.activeElement;
+                    if (e.key === 'Tab') {
+                        if (!e.shiftKey && active === $('#returnDelete')[0]) {
+                            e.preventDefault();
+                            $('#confirmDelete').focus();
+                        } else if (e.shiftKey && active === $('#confirmDelete')[0]) {
+                            e.preventDefault();
+                            $('#returnDelete').focus();
+                        }
+                    } else if (e.key === 'Escape') {
+                        $('#overlay').fadeOut(150).off('keydown.focusTrap');
+                    }
+                });
+
+                // Ajax 提交删除请求  第二段弹框
+                $('#confirmDelete').one('click', function () {
+                    $.ajax({
+                        url: '/gakusei/deleteGakuseiInfo',
+                        type: 'POST',
+                        data: { gakuseiId: gakuseiId },
+                        success: function () {
+                            $('#overlay').fadeIn({ duration: 270, start: function () { $(this).css({ 'display': 'grid', 'place-items': 'center' }) } });
+                            $('#overlay').html(`
+									<div id="dialog" class="dialog" tabindex="-1">
+										<h4 class="dlgTitleMsg">通知</h4>	
+										<div style="text-align:center">
+											<p>削除できました。</p >
+											<br>
+											<input id='subReturnDelete' type='button' value='確認' onclick="location.href='/gakusei'" class="btn btn-warning">
+										</div>	
+									</div>	
+										`);
+                            $('#subReturnDelete').focus();
+                            $('#overlay').on('keydown.focusTrap', function (e) {
+                                if (e.key === 'Tab') {
+                                    const active = document.activeElement;
+
+                                    if (!e.shiftKey && active === $('#subReturnDelete')[0]) {
+                                        e.preventDefault();
+                                        $('#subReturnDelete').focus();
+                                    } else if (e.shiftKey && active === $('#subReturnDelete')[0]) {
+                                        e.preventDefault();
+                                        $('#subReturnDelete').focus();
+                                    }
+                                }
+                            })
+                        },
+                        error: function () {
+                            alert('削除できませんでした');
+                        }
+                    });
+                });
+
+                // 返回按钮
+                $('#returnDelete').click(function () {
+                    $('#overlay').fadeOut(150).off('keydown.focusTrap');
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
