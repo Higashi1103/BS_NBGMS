@@ -22,7 +22,7 @@ public class TensuService {
 
 //	点数変更メソード
 	public void updateGakuseiScore(Integer gakuseiId, String kagenTensuStr, Integer isDelete) {
-		Gakusei dbGakusei = gakuseiMapper.getGakuseiDetail(gakuseiId);
+		Gakusei dbGakusei = gakuseiMapper.getGakuseiTensu(gakuseiId);
 		int currentScore = dbGakusei.getTensu();
 		int delta = Integer.parseInt(kagenTensuStr); 
 
@@ -34,7 +34,7 @@ public class TensuService {
 		}
 
 		dbGakusei.setTensu(newScore);
-		gakuseiMapper.updateGakuseiInfo(dbGakusei);
+		gakuseiMapper.updateGakuseiTensu(dbGakusei);
 	}
 
 	public List<TensuHenkouRireki> findAll() {
