@@ -313,6 +313,7 @@
 								<input type="button" value="更新" id="editBtn" class="btn btn-primary">
 								<input type="button" value="削除" id="deleteBtn" class="btn btn-danger"
 									style="margin-left:10px;">
+								<input type="button" value="戻る" id="backBtn" class="btn btn-warning">
 							</div>
 						</form>
 					</div>
@@ -417,6 +418,10 @@
 				const hiaringuId = $("input[name='id']").val();
 				window.location.href = `/hiaringu/hiaringuKoushin?id=${hiaringuId}`;
 			});
+			
+			$("#backBtn").click(function () {
+				window.history.back();
+			});
 
 
 			// 取消删除按钮
@@ -459,6 +464,9 @@
 				// 成功后跳转回列表页面
 				window.location.href = '/hiaringu';
 			});
+
+
+
 		});
 	</script>
 </body>
