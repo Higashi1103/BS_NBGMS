@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>技術者管理システム</title>
+	<meta charset="utf-8">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
+	<!-- 拡大鏡アイコンのインポート-->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+	<!--拡大鏡のJS-->
+	<script th:src="@{/js/SearchNamae.js}"></script>
+	<!--変更確認のJS-->
+	<script th:src="@{/js/HenkoConfirm.js}"></script>
+
+	<style>
+		.navbar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 51px;
+			background-color: #f9f9f9;
+			color: #000000;
+			display: flex;
+			align-items: center;
+			padding: 0 10px;
+			box-sizing: border-box;
+			z-index: 1000;
+			border-bottom: 1px solid #e5e5e5;
+		}
+
+		a {
+			letter-spacing: 0.05em;
+		}
+
+		#title {
+			position: absolute;
+			left: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 18px;
+			color: #777;
+		}
+
+		#user {
+			position: absolute;
+			right: 20px;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+		}
+
+		.dropdown-menu {
+			display: none;
+			position: absolute;
+			top: 40px;
+			right: 0;
+			transform: translateX(-100px);
+			background-color: #fff;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+			min-width: 100px;
+			z-index: 2000;
+		}
+
+		.dropdown-menu a {
+			display: block;
+			padding: 8px 10px;
+			color: #333;
+			text-decoration: none;
+			font-size: 14px;
+		}
+
+		.dropdown-menu a:hover {
+			background-color: #f2f2f2;
+		}
+
+		.sidebar {
+			position: fixed;
+			top: 51px;
+			left: 0;
+			width: 250px;
+			height: calc(100% - 51px);
+			background-color: #f9f9f9;
+			color: rgb(48, 48, 48);
+			box-sizing: border-box;
+			border-right: 1px solid #e5e5e5;
+		}
+
+		.sidebar-nav div {
+			margin: 0;
+			padding: 10px;
+			border-bottom: 1px solid #e5e5e5;
+		}
+
+		.sidebar-nav div a {
+			color: #454545;
+			font-size: 14px;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+		}
+
+		.sidebar-nav div:hover {
+			background-color: #e6e6e6;
+			color: #fff;
+		}
+
+		.main-content {
+			margin-top: 30px;
+			margin-left: 240px;
+			padding: 40px;
+			min-height: calc(100vh - 51px);
+			background-color: #fff;
+			display: block;
+			/* 改成普通块布局 */
+		}
+
+		/* 自定义模态框样式 */
+		.custom-modal {
+			display: none;
+			position: fixed;
+			z-index: 9999;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.3);
+		}
+
+		.custom-modal-content {
+			background-color: #fefefe;
+			margin: 10% auto;
+			padding: 0;
+			border: 1px solid #888;
+			width: 400px;
+			border-radius: 4px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		}
+
+		.custom-modal-header {
+			padding: 15px;
+			background-color: #f9f9f9;
+			border-bottom: 1px solid #e5e5e5;
+			border-radius: 4px 4px 0 0;
+			text-align: left;
+		}
+
+		.custom-modal-header h4 {
+			margin: 0;
+			font-size: 16px;
+			color: #333;
+		}
+
+		.custom-modal-body {
+			padding: 20px;
+			font-size: 14px;
+			color: #666;
+		}
+
+		.custom-modal-footer {
+			padding: 15px;
+			text-align: right;
+			border-top: 1px solid #e5e5e5;
+			background-color: #f9f9f9;
+			border-radius: 0 0 4px 4px;
+		}
+
+		/* 错误提示样式 */
+		.error-message {
+			color: red;
+			font-size: 12px;
+			margin-top: 5px;
+			display: none;
+			/*先隐藏*/
+		}
+
+		.has-error .form-control {
+			border-color: red;
+			/*输入框变红*/
+			box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px rgba(217, 83, 79, 0.6);
+		}
+
+
+
+
+		/* 有 “必须” 字段的 span 样式 */
+		.span-css {
+			background-color: #d9534f;
+			color: #fff;
+			font-size: 12px;
+			padding: 1px 5px;
+			border-radius: 3px;
+			margin-left: 5px;
+			align-self: center;
+			/* 与文字垂直对齐 */
+		}
+
+		/* label + input 一起放 flex，自动对齐高度 */
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			/* label 在上，input 在下 */
+			margin-bottom: 12px;
+		}
+
+		/* label 基本样式 */
+		.label-css {
+			display: flex;
+			align-items: center;
+			/* 强制让文字和“必須”标签垂直居中对齐 */
+			margin-bottom: 4px;
+			/* label 和输入框间距 */
+			font-weight: 600;
+			line-height: 1.3;
+			letter-spacing: 0.03em;
+		}
+
+		.size-no-change {
+			resize: none;
+			/* 禁止拖拽 */
+			overflow-y: auto;
+			/* 超出时滚动 */
+			min-height: 60px;
+			max-height: 300px;
+		}
+
+
+		.modal-content.panel-primary .modal-header {
+			background-color: #337ab7;
+			border-color: #2e6da4;
+			color: white;
+			text-align: center;
+			position: relative;
+			border-top-left-radius: 4px;
+			border-top-right-radius: 4px;
+		}
+
+		.modal-header .close {
+			position: absolute;
+			right: 15px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: white;
+			opacity: 1;
+			font-size: 22px;
+			line-height: 1;
+		}
+
+		.modal-header .close:hover {
+			color: #d9edf7;
+		}
+
+		.modal-footer.panel-footer {
+			background-color: #f5f5f5;
+			border-top: 1px solid #ddd;
+		}
+
+		.modal-content {
+			border: 2px solid #337ab7;
+			border-radius: 8px;
+		}
+
+
+
+		.overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.45);
+			display: flex;
+			justify-content: center;
+			/* 水平居中 */
+			align-items: center;
+			/* 垂直居中 */
+			z-index: 9999;
+		}
+
+		.dialog {
+			background: white;
+			border-radius: 12px;
+			width: auto;
+			/* 改为auto，自动适应内容 */
+			min-width: 320px;
+			/* 设置最小宽度 */
+			max-width: 500px;
+			/* 设置最大宽度 */
+			height: auto;
+			/* 改为auto，自动适应内容 */
+			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+			z-index: 10000;
+			display: flex;
+			flex-direction: column;
+			/* 删除 margin-top */
+		}
+
+		.dlgTitle {
+			background-color:#f0ad4e;
+			margin: 0;
+			/* 改为0 */
+			border-radius: 12px 12px 0px 0px;
+			padding: 12px 20px;
+			/* 减少内边距 */
+
+			border-bottom: 1px solid #ccc;
+			color: white;
+			font-weight: bold;
+			font-size: 16px;
+		}
+
+		.dlgTitleMsg {
+			background-color: #5bc0de;
+			margin-top: 0;
+			margin-bottom: 42px;
+			border-radius: 12px 12px 0px 0px;
+			padding: 10px;
+			border-bottom: 1px solid gray;
+			color: white
+		}
+
+		.dlgTitleConfirm {
+			background-color: #f0ad4e;
+			margin-top: 0;
+			margin-bottom: 42px;
+			border-radius: 12px 12px 0px 0px;
+			padding: 10px;
+			border-bottom: 1px solid gray;
+			color: white
+		}
+
+		.center {
+			text-align: center;
+		}
+
+		.flex {
+			display: flex;
+		}
+
+		.update {
+			margin-right: 15px;
+		}
+
+		.margin-left {
+			margin-left: auto;
+		}
+
+		.margin-bottom {
+			display: inline-block;
+			margin-bottom: 6px;
+		}
+
+		.float-right {
+			float: right;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="#">ログアウト</a>
+			</div>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+							style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+							style="margin-right: 5px;">学生情報</a>
+				</div>
+				<div>
+					<a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
+							style="margin-right: 5px;">ポイント履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/hiaringu}"><img src="/image/hiaringu.png" height="18px"
+							style="margin-right: 5px;">ヒアリング履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png" height="18px"
+							style="margin-right: 5px;">出力</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="main-content">
+		<div id="table-content">
+			<div class="col-lg-12">
+				<div class="panel panel-default" style="width: 1090px;">
+					<div class="panel-heading">
+						人事ヒヤリング新規作成
+					</div>
+					<div class="panel-body">
+						<form id="hiaringuForm">
+							<div class="row">
+								<!--左列-->
+								<div class="col-lg-6">
+									<div class="form-group" id="gakuseiNamae-group">
+										<label>学生名前：
+											<span class="span-css">必須</span>
+										</label>
+										<div class="input-group">
+											<input class="form-control" type="text" id="gakuseiNamae"
+												name="gakuseiNamae" placeholder="右側の虫眼鏡をクリックして検索" readonly>
+											<span class="input-group-btn">
+												<button id="openSearchModal" class="btn btn-default" type="button">
+													<i class="fa fa-search"></i>
+												</button>
+											</span>
+										</div>
+										<span class="error-message">学生名前を選択してください</span>
+										<!-- 隐藏字段：学生ID-->
+										<input type="hidden" id="gakuseiId" name="gakuseiId">
+
+									</div>
+
+									<!-- あいまい検索ボックス -->
+
+									<div id="searchModal" class="modal fade" tabindex="-1" role="dialog">
+										<div class="modal-dialog">
+
+											<div class="modal-content panel panel-primary">
+												<div class="modal-header panel-heading">
+													<h4 class="modal-title">学生検索</h4>
+													<button type="button" class="close"
+														data-dismiss="modal">&times;</button>
+												</div>
+
+												<div class="modal-body panel-body">
+													<input type="text" id="searchNamae" placeholder="名前を入力してください"
+														class="form-control mb-2">
+
+													<ul id="searchResult"
+														style="max-height: 200px; overflow-y: auto; padding-left: 0; list-style-type: none; margin: 0;">
+													</ul>
+												</div>
+
+												<div class="modal-footer panel-footer">
+													<button id="confirmSelection" type="button" class="btn btn-primary"
+														disabled>確定</button>
+												</div>
+
+											</div>
+										</div>
+									</div>
+
+
+									<div class="form-group" id="tantousya-group" style="position: relative;">
+										<label>担当者：
+											<span class="span-css">必須</span>
+										</label>
+										<input class="form-control" type="text" id="tantousya" name="tantousya"
+											placeholder="クリックして選択" readonly>
+										<span class="error-message">担当者を選択してください</span>
+
+										<!-- 担当者选择弹窗 -->
+										<div id="selectModal" class="select-modal" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 5px; background: white; 
+        border: 1px solid #ccc; border-radius: 4px; padding: 10px; z-index: 1000; 
+        width: 200px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+											<div><label><input type="checkbox" value="神田先生" style="margin-right: 5px;"> 神田先生</label></div>
+											<div><label><input type="checkbox" value="呉先生" style="margin-right: 5px;"> 呉先生</label></div>
+											<div><label><input type="checkbox" value="他人" style="margin-right: 5px;"> 他人</label></div>
+											<button type="button" class="btn btn-primary btn-sm mt-2"
+												onclick="confirmSelection()">確定</button>
+										</div>
+									</div>
+
+
+									<div class="form-group" id="hiaringuNichiji-group">
+										<label>ヒアリング日時：
+											<span class="span-css">必須</span>
+										</label>
+										<input class="form-control" type="datetime-local" id="hiaringuNichiji"
+											name="hiaringuNichiji">
+										<span class="error-message">ヒアリング日時を選択してください</span>
+									</div>
+
+									<div class="form-group" id="hiaringuJikan-group">
+										<label>ヒアリング時間：
+											<span class="span-css">必須</span>
+										</label>
+										<input class="form-control" type="text" id="hiaringuJikan" name="hiaringuJikan"
+											maxlength="10" placeholder="0以外の数字を入力してください（単位：分）">
+										<span class="error-message">ヒアリング時間を入力してください</span>
+									</div>
+
+									<div class="form-group" id="hiaringuBasyo-group">
+										<label>ヒアリング場所：
+											<span class="span-css">必須</span>
+										</label>
+										<input class="form-control" type="text" id="hiaringuBasyo" name="hiaringuBasyo" maxlength="255">
+										<span class="error-message">ヒアリング場所を入力してください</span>
+									</div>
+								</div>
+
+								<!--右列-->
+								<div class="col-lg-6">
+									<div class="form-group" id="hiaringuGenin-group">
+										<label>ヒアリング原因：
+											<span class="span-css">必須</span>
+										</label>
+										<input class="form-control" type="text" id="hiaringuGenin" name="hiaringuGenin" maxlength="5000">
+										<span class="error-message">ヒアリング原因を入力してください</span>
+									</div>
+
+									<div class="form-group" id="hiaringuNaiyou-group">
+										<label>ヒアリング内容：
+											<span class="span-css">必須</span>
+										</label>
+										<textarea class="form-control size-no-change" rows="5" id="hiaringuNaiyou"
+											maxlength="5000" name="hiaringuNaiyou"></textarea>
+										<span class="error-message">ヒアリング内容を入力してください</span>
+									</div>
+
+									<div class="form-group">
+										<label>備考欄：</label>
+										<textarea class="form-control size-no-change" rows="4" id="bikou"
+											maxlength="5000" name="bikou"></textarea>
+									</div>
+								</div>
+							</div>
+
+							<div class="text-right" style="margin-top: 20px;">
+								<button type="button" class="btn btn-success" id="kakutei"
+									onclick="checkForm()">確定</button>
+								<button type="button" class="btn btn-warning" id="modoru">戻る</button>
+							</div>
+
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--一般提示弹窗-->
+	<div id="customModal" class="overlay" style="display: none;">
+		<div class="dialog">
+			<div class="dlgTitle" id="modalTitle" style="background-color: red;">提示</div>
+			<div style="padding: 20px 30px;">
+				<p id="modalMessage" style="font-size: 15px; margin: 0 0 20px 0; text-align: center;"></p>
+				<div style="text-align: center;">
+					<button onclick="closeModal()" class="btn btn-primary" style="min-width: 80px;">確認</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 新规确认弹窗 -->
+	<div id="insertConfirmOverlay" class="overlay" style="display: none;">
+		<div class="dialog">
+			<div class="dlgTitle">確認</div>
+			<div style="padding: 20px 30px;">
+				<p style="font-weight: bold; margin: 0 0 15px 0; font-size: 15px; text-align: center;">
+					以下の内容をご確認の上、
+						<br>「登録」ボタンを押してください。
+				</p>
+				<div style="text-align: center; margin-bottom: 20px;">
+					<p style="font-size: 14px; color: #666; margin: 5px 0;">
+						学生名: <strong id="insertGakuseiNamae"></strong>
+					</p>
+					<p style="font-size: 14px; color: #666; margin: 5px 0;">
+						担当者: <strong id="insertTantousya"></strong>
+					</p>
+				</div>
+				<div style="text-align: center;">
+					<button type="button" class="btn btn-success" id="confirmInsertBtn" style="margin-right: 35px;padding: 6px 20px;">
+						登録
+					</button>
+					<button type="button" class="btn btn-warning" id="cancelInsertBtn"
+						style="margin-right: 10px; padding: 6px 20px;">
+						キャンセル
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 新规成功弹窗 -->
+	<div id="insertSuccessOverlay" class="overlay" style="display: none;">
+		<div class="dialog">
+			<div class="dlgTitle" style="background-color:skyblue">通知</div>
+			<div style="padding: 20px 30px;">
+				<p style="margin: 0 0 20px 0; font-size: 15px; text-align: center;">ヒアリング情報登録完了しました</p>
+				<div style="text-align: center;">
+					<button type="button" class="btn btn-primary" id="closeInsertSuccessModal"
+						style="padding: 6px 30px;">
+						確認
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script>
+		$("#modoru").click(function () {
+			window.history.back();
+		});
+
+		window.addEventListener('DOMContentLoaded', function () {
+			const input = document.getElementById('hiaringuNichiji');
+			const now = new Date();
+
+			// 设置指定时间
+			const defaultHour = 18;
+			const defaultMinute = 30;
+
+			// 构造 ISO 字符串格式（yyyy-MM-ddTHH:mm）
+			const year = now.getFullYear();
+			const month = String(now.getMonth() + 1).padStart(2, '0');
+			const day = String(now.getDate()).padStart(2, '0');
+			const hours = String(defaultHour).padStart(2, '0');
+			const minutes = String(defaultMinute).padStart(2, '0');
+
+			const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+			input.value = formatted;
+		});
+
+		// 显示自定义弹窗（全局函数）
+		window.showModal = function (title, message) {
+			$('#modalTitle').text(title);
+			$('#modalMessage').text(message);
+			$('#customModal').show();
+		}
+
+		// 关闭自定义弹窗（全局函数）
+		window.closeModal = function () {
+			$('#customModal').hide();
+		}
+
+		// checkForm 全局函数
+		window.checkForm = function () {
+			return validateForm();
+		}
+
+		// 点击确定按钮，先进行表单验证
+		$("#kakutei").click(function () {
+			// 先执行表单验证
+			if (!validateForm()) {
+				return; // 验证失败，不继续
+			}
+
+			// 验证通过，显示确认弹窗
+			const gakuseiNamae = $("#gakuseiNamae").val();
+			const tantousya = $("#tantousya").val();
+
+			$("#insertGakuseiNamae").text(gakuseiNamae);
+			$("#insertTantousya").text(tantousya);
+
+			$("#insertConfirmOverlay").show();
+		});
+
+		// 确认弹窗中的"更新"按钮
+		$("#confirmInsertBtn").click(function () {
+			const formData = {
+				gakuseiId: $("#gakuseiId").val(),
+				gakuseiNamae: $("#gakuseiNamae").val(),
+				tantousya: $("#tantousya").val(),
+				hiaringuNichiji: $("#hiaringuNichiji").val(),
+				hiaringuJikan: $("#hiaringuJikan").val(),
+				hiaringuBasyo: $("#hiaringuBasyo").val(),
+				hiaringuGenin: $("#hiaringuGenin").val(),
+				hiaringuNaiyou: $("#hiaringuNaiyou").val(),
+				bikou: $("#bikou").val()
+			};
+
+			$.ajax({
+				url: "/jinjihiaringu/insert",
+				type: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(formData),
+				success: function (response) {
+					$("#insertConfirmOverlay").hide();
+					if (response.success) {
+						$("#insertSuccessOverlay").show();
+					} else {
+						showModal('エラー', '登録に失敗しました: ' + response.message);
+					}
+				},
+				error: function (xhr, status, error) {
+					$("#insertConfirmOverlay").hide();
+					showModal('エラー', '登録リクエストに失敗しました: ' + error);
+				}
+			});
+		});
+
+		// 取消按钮
+		$("#cancelInsertBtn").click(function () {
+			$("#insertConfirmOverlay").hide();
+		});
+
+		// 成功弹窗的关闭按钮
+		$("#closeInsertSuccessModal").click(function () {
+			$("#insertSuccessOverlay").hide();
+			window.location.href = "/hiaringu";
+		});
+
+		// 表单验证函数
+		function validateForm() {
+			// 清除之前的错误提示
+			$('.form-group').removeClass('has-error');
+			$('.error-message').hide();
+
+			var isValid = true;
+			var firstErrorField = null;
+
+// 定义字段长度限制（根据数据库字段长度设置）
+	var fieldLengths = {
+		'hiaringuJikan': 10,        // varchar(10)
+		'hiaringuBasyo': 255,       // varchar(255)
+		'hiaringuGenin': 5000,      // text (实际限制为5000字符)
+		'hiaringuNaiyou': 5000,     // text
+		'bikou': 5000               // text
+	};
+	
+			var requiredFields = [
+				{id: 'gakuseiNamae', group: 'gakuseiNamae-group'},
+				{id: 'tantousya', group: 'tantousya-group'},
+				{id: 'hiaringuNichiji', group: 'hiaringuNichiji-group'},
+				{id: 'hiaringuJikan', group: 'hiaringuJikan-group'},
+				{id: 'hiaringuBasyo', group: 'hiaringuBasyo-group'},
+				{id: 'hiaringuGenin', group: 'hiaringuGenin-group'},
+				{id: 'hiaringuNaiyou', group: 'hiaringuNaiyou-group'},
+			];
+
+			// 检查每个必填字段
+			requiredFields.forEach(function (field) {
+				var value = $('#' + field.id).val().trim();
+				if (value === '') {
+					isValid = false;
+					$('#' + field.group).addClass('has-error');
+					$('#' + field.group + ' .error-message').show();
+					if (!firstErrorField) {
+						firstErrorField = '#' + field.id;
+					}
+				}
+			});
+			
+			//检查所有字段长度
+			Object.keys(fieldLengths).forEach(function(fieldId) {
+		var value = $('#' + fieldId).val();
+		var maxLength = fieldLengths[fieldId];
+		
+		if (value && value.length > maxLength) {
+			isValid = false;
+			var groupId = fieldId + '-group';
+			$('#' + groupId).addClass('has-error');
+			$('#' + groupId + ' .error-message').text('最大' + maxLength + '文字まで入力できます（現在:' + value.length + '文字）').show();
+			if (!firstErrorField) {
+				firstErrorField = '#' + fieldId;
+			}
+		}
+	});
+			
+
+			// 特殊验证：ヒアリング時間
+			var hiaringuJikan = $('#hiaringuJikan').val().trim();
+			if (hiaringuJikan !== '') {
+				if (!/^\d+$/.test(hiaringuJikan)) {
+					isValid = false;
+					$('#hiaringuJikan-group').addClass('has-error');
+					$('#hiaringuJikan-group .error-message').text('数字のみ入力してください').show();
+					if (!firstErrorField) {
+						firstErrorField = '#hiaringuJikan';
+					}
+				}
+				else if (hiaringuJikan.charAt(0) === '0') {
+					isValid = false;
+					$('#hiaringuJikan-group').addClass('has-error');
+					$('#hiaringuJikan-group .error-message').text('0以外の数字で入力してください').show();
+					if (!firstErrorField) {
+						firstErrorField = '#hiaringuJikan';
+					}
+				}
+				else if (hiaringuJikan.length > 10) {
+			isValid = false;
+			$('#hiaringuJikan-group').addClass('has-error');
+			$('#hiaringuJikan-group .error-message').text('最大10文字まで入力できます').show();
+			if (!firstErrorField) {
+				firstErrorField = '#hiaringuJikan';
+			}
+		}
+				
+			}
+
+			// 如果有错误，滚动到第一个错误字段并显示提示
+			if (!isValid) {
+				if (firstErrorField) {
+					$('html, body').animate({
+						scrollTop: $(firstErrorField).offset().top - 100
+					}, 300);
+				}
+
+				// 显示错误提示弹窗
+				setTimeout(function () {
+					showModal('エラー', '登録不可、入力項目を確認してください');
+				}, 100);
+
+				return false;
+			}
+
+			return true;
+		}
+
+		// 点击输入框时清除错误状态
+		$('input, textarea, select').on('focus input', function () {
+			var $group = $(this).closest('.form-group');
+			$group.removeClass('has-error');
+			$group.find('.error-message').hide();
+		});
+
+		const now = new Date();
+		const localISOTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+			.toISOString()
+			.slice(0, 16);
+		$("#sakuseiNichiji").val(localISOTime);
+
+		// 实时输入验证：限制只能输入数字
+		$('#hiaringuJikan').on('input', function () {
+			this.value = this.value.replace(/[^\d]/g, '');
+			if (this.value !== '' && this.value.charAt(0) !== '0') {
+				$('#hiaringuJikan-group').removeClass('has-error');
+				$('#hiaringuJikan-group .error-message').hide();
+			}
+		});
+
+		// 输入时清除错误提示
+		$('.form-control').on('input change', function () {
+			var $group = $(this).closest('.form-group');
+			if ($(this).val().trim() !== '') {
+				$group.removeClass('has-error');
+				$group.find('.error-message').hide();
+			}
+		});
+
+		// 担当者选择功能
+		$(function () {
+			$('#tantousya').click(function (e) {
+				$('#selectModal').toggle();
+				e.stopPropagation();
+			});
+
+			// 点击"确定"按钮事件
+			$('#selectModal button.btn-primary').click(function () {
+				var selected = [];
+				$('#selectModal input[type="checkbox"]:checked').each(function () {
+					selected.push($(this).val());
+				});
+				$('#tantousya').val(selected.join(', '));
+				$('#selectModal').hide();
+
+				// 清除错误提示
+				if (selected.length > 0) {
+					$('#tantousya-group').removeClass('has-error');
+					$('#tantousya-group .error-message').hide();
+				}
+			});
+
+			// 点击其他地方关闭选择框
+			$(document).click(function (event) {
+				if (!$(event.target).closest('#tantousya, #selectModal').length) {
+					$('#selectModal').hide();
+				}
+			});
+		});
+
+		// 放大镜弹窗功能
+		$(function () {
+			// 打开模态框时加载所有学生数据
+			$('#openSearchModal').click(function () {
+				$('#searchModal').modal('show');
+				loadAllStudents();
+			});
+
+			// 实时搜索功能
+			$('#searchNamae').on('input', function () {
+				const keyword = $(this).val();
+				searchStudents(keyword);
+			});
+
+			// 加载所有学生数据
+			function loadAllStudents() {
+				$.ajax({
+					url: '/jinjihiaringu/api/searchGakusei',
+					type: 'GET',
+					data: {keyword: ''},
+					success: function (data) {
+						displayStudents(data);
+					},
+					error: function (xhr, status, error) {
+						console.error('学生データの読み込みに失敗しました:', error);
+						$('#searchResult').html('<p class="text-danger">データ読み込み失敗</p>');
+					}
+				});
+			}
+
+			// 搜索学生
+			function searchStudents(keyword) {
+				if (keyword.trim() === '') {
+					loadAllStudents();
+					return;
+				}
+
+				$.ajax({
+					url: '/jinjihiaringu/api/searchGakusei',
+					type: 'GET',
+					data: {keyword: keyword},
+					success: function (data) {
+						displayStudents(data);
+					},
+					error: function (xhr, status, error) {
+						console.error('検索に失敗しました:', error);
+						$('#searchResult').html('<p class="text-danger">検索失敗</p>');
+					}
+				});
+			}
+
+			// 显示学生列表
+			function displayStudents(students) {
+				const $result = $('#searchResult');
+
+				if (students.length === 0) {
+					$result.html('<p class="text-muted">該当する学生が見つかりません</p>');
+					return;
+				}
+
+				let html = '<div class="list-group">';
+				students.forEach(function (student) {
+					html += `
+				<a href="#" class="list-group-item list-group-item-action student-item" 
+					data-id="${student.gakuseiId}" 
+					data-name="${student.namae}" 
+					data-kurasu="${student.kurasuNamae}">
+					<div class="d-flex flex-column">
+						${student.namae}
+						（学生ID：${student.gakuseiId}）
+						（所属クラス：${student.kurasuNamae}）
+					</div>
+				</a>`;
+				});
+				html += '</div>';
+
+				$result.html(html);
+
+				let selectedStudent = null;
+
+				// 点击选中学生
+				$('.student-item').click(function (e) {
+					e.preventDefault();
+					$('.student-item').removeClass('active');
+					$(this).addClass('active');
+
+					selectedStudent = {
+						id: $(this).data('id'),
+						name: $(this).data('name'),
+						kurasu: $(this).data('kurasu')
+					};
+
+					// 启用确认按钮
+					$('#confirmSelection').prop('disabled', false);
+				});
+
+				// 点击确认按钮后填入输入框并关闭模态框
+				$('#confirmSelection').off('click').on('click', function () {
+					if (selectedStudent) {
+						$('#gakuseiId').val(selectedStudent.id);
+						$('#gakuseiNamae').val(selectedStudent.name);
+						$('#searchModal').modal('hide');
+						$('#searchNamae').val('');
+						$('#confirmSelection').prop('disabled', true);
+					}
+				});
+			}
+
+			// confirmSelection 全局函数（如果HTML中使用 onclick）
+			window.confirmSelection = function () {
+				$('#confirmSelection').click();
+			};
+
+			// 模态框关闭时清除搜索内容
+			$('#searchModal').on('hidden.bs.modal', function () {
+				$('#searchNamae').val('');
+				$('#confirmSelection').prop('disabled', true);
+			});
+		});
+	</script>
+</body>
+
+</html>
