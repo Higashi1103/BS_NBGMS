@@ -24,9 +24,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.demo.dto.ShuturyokuDTO;
+import com.example.demo.entity.Yuza;
 import com.example.demo.service.ShuturyokuService;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class ShuturyokuController {
@@ -37,47 +39,54 @@ public class ShuturyokuController {
 		this.service = service;
 	}
 
-//出力画面
+	//出力画面
 	@GetMapping("/shuturyoku")
-	public String showExportPage(Model model) {
-		  // 从数据库取出所有班级
-	    List<String> kurasuList = service.getKurasuList();
+	public String showExportPage(Model model, HttpSession session) {
+		Yuza currentYuza = (Yuza) session.getAttribute("currentYuza");
+		if (currentYuza == null) {
+			return "redirect:/login";
+		}
+		
+		//全てのクラスを取得
+		List<String> kurasuList = service.getKurasuList();
 
-	    // 取出比当前时间早且最近的班级
-	    String latestKurasu = service.getLatestKurasu();
+		// 一番新しいクラスを取得
+		String latestKurasu = service.getLatestKurasu();
 
-	    // 如果没有符合条件的班级，就默认第一个
-	    if (latestKurasu == null && !kurasuList.isEmpty()) {
-	        latestKurasu = kurasuList.get(0);
-	    }
+		// 条件に合うクラスがなかった場合
+		if (latestKurasu == null && !kurasuList.isEmpty()) {
+			latestKurasu = kurasuList.get(0);
+		}
 
-	    // 传给前端
-	    model.addAttribute("kurasuList", kurasuList);
-	    model.addAttribute("defaultKurasu", latestKurasu);
+		model.addAttribute("kurasuList", kurasuList);
+		model.addAttribute("defaultKurasu", latestKurasu);
 
-	    return "shuturyoku";
+		return "shuturyoku";
 	}
 
-//出力バタンイベント
+	//出力バタンイベント
 	@PostMapping("/export")
 	public void exportExcel(@RequestParam(required = false) String kurasuNamae,
 			@RequestParam(required = false) String year,
 			@RequestParam List<String> fields,
 			HttpServletResponse response) throws Exception {
-//クラス条件
+
+		//クラスフィルター
 		kurasuNamae = (kurasuNamae == null || kurasuNamae.isBlank()) ? null : kurasuNamae.trim();
 		year = (year == null || year.isBlank()) ? null : year.trim();
 
 		List<ShuturyokuDTO> data = service.getExportData(kurasuNamae, year, fields);
-
+		
+		//ファイルを設定する
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet("Export");
 
+			//ヘッドに表示するタイトルの変更
 			Map<String, String> headerMap = new HashMap<>();
 			headerMap.put("kurasuId", "クラスID");
 			headerMap.put("kurasuNamae", "クラス名前");
 			headerMap.put("kurasuKamoku", "クラス科目");
-			headerMap.put("kurasuMemo", "クラスメモ");
+			headerMap.put("kurasuMemo", "メモ");
 			headerMap.put("tantoSensei", "担当先生");
 			headerMap.put("memo", "クラスメモ");
 			headerMap.put("gakuseiId", "学生ID");
@@ -107,29 +116,29 @@ public class ShuturyokuController {
 			CellStyle studentHeaderStyle = workbook.createCellStyle();
 			CellStyle pointHeaderStyle = workbook.createCellStyle();
 			CellStyle hearingHeaderStyle = workbook.createCellStyle();
-			
+
+			//フォントを設定
 			Font headerFont = workbook.createFont();
 			headerFont.setBold(true);
 			headerFont.setColor(IndexedColors.BLACK.getIndex());
-			
-			for (CellStyle style : Arrays.asList(classHeaderStyle, studentHeaderStyle, pointHeaderStyle, hearingHeaderStyle)) {
-			    style.setFont(headerFont);
-			    style.setAlignment(HorizontalAlignment.CENTER);
-			    style.setVerticalAlignment(VerticalAlignment.CENTER);
-			    style.setBorderTop(BorderStyle.THIN);
-			    style.setBorderBottom(BorderStyle.THIN);
-			    style.setBorderLeft(BorderStyle.THIN);
-			    style.setBorderRight(BorderStyle.THIN);
-			    style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+			for (CellStyle style : Arrays.asList(classHeaderStyle, studentHeaderStyle, pointHeaderStyle,
+					hearingHeaderStyle)) {
+				style.setFont(headerFont);
+				style.setAlignment(HorizontalAlignment.CENTER);
+				style.setVerticalAlignment(VerticalAlignment.CENTER);
+				style.setBorderTop(BorderStyle.THIN);
+				style.setBorderBottom(BorderStyle.THIN);
+				style.setBorderLeft(BorderStyle.THIN);
+				style.setBorderRight(BorderStyle.THIN);
+				style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 			}
-			
-			
+
+			//タイトル背景色を設定
 			classHeaderStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
 			studentHeaderStyle.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
 			pointHeaderStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
 			hearingHeaderStyle.setFillForegroundColor(IndexedColors.PALE_BLUE.getIndex());
-
-
 
 			CellStyle cellStyle = workbook.createCellStyle();
 			cellStyle.setAlignment(HorizontalAlignment.CENTER);
@@ -139,30 +148,36 @@ public class ShuturyokuController {
 			cellStyle.setBorderLeft(BorderStyle.THIN);
 			cellStyle.setBorderRight(BorderStyle.THIN);
 
+			//データを分類する
 			Row headerRow = sheet.createRow(0);
 			for (int j = 0; j < fields.size(); j++) {
 				String field = fields.get(j);
-			    Cell cell = headerRow.createCell(j);
-			    cell.setCellValue(headerMap.getOrDefault(field, field));
+				Cell cell = headerRow.createCell(j);
+				cell.setCellValue(headerMap.getOrDefault(field, field));
 
-			    // 根据字段分组设定颜色
-			    if (Arrays.asList("kurasuId", "kurasuNamae", "kurasuKamoku", "kurasuMemo", "tantoSensei").contains(field)) {
-			        cell.setCellStyle(classHeaderStyle);
-			    } else if (Arrays.asList("gakuseiId", "namae", "seibetsu", "seinengappi", "saishuGakureki", "gogakuryoku", "tensu", "hyouka", "sonota").contains(field)) {
-			        cell.setCellStyle(studentHeaderStyle);
-			    } else if (Arrays.asList("rirekiId", "kagenTensu", "kagenRiyu", "hasseiBi", "tensuBiko").contains(field)) {
-			        cell.setCellStyle(pointHeaderStyle);
-			    } else if (Arrays.asList("hiaringuId", "hiaringuTantousya", "hiaringuNichiji", "hiaringuJikan", "hiaringuBasyo", "hiaringuGenin", "hiaringuNaiyou", "hiaringuBiko").contains(field)) {
-			        cell.setCellStyle(hearingHeaderStyle);
-			    }
+				if (Arrays.asList("kurasuId", "kurasuNamae", "kurasuKamoku", "kurasuMemo", "tantoSensei")
+						.contains(field)) {
+					cell.setCellStyle(classHeaderStyle);
+				} else if (Arrays.asList("gakuseiId", "namae", "seibetsu", "seinengappi", "saishuGakureki",
+						"gogakuryoku", "tensu", "hyouka", "sonota").contains(field)) {
+					cell.setCellStyle(studentHeaderStyle);
+				} else if (Arrays.asList("rirekiId", "kagenTensu", "kagenRiyu", "hasseiBi", "tensuBiko")
+						.contains(field)) {
+					cell.setCellStyle(pointHeaderStyle);
+				} else if (Arrays.asList("hiaringuId", "hiaringuTantousya", "hiaringuNichiji", "hiaringuJikan",
+						"hiaringuBasyo", "hiaringuGenin", "hiaringuNaiyou", "hiaringuBiko").contains(field)) {
+					cell.setCellStyle(hearingHeaderStyle);
+				}
 			}
 
+			//列の幅を設定する
 			for (int j = 0; j < fields.size(); j++) {
-			    sheet.autoSizeColumn(j);
-			    int currentWidth = sheet.getColumnWidth(j);
-			    sheet.setColumnWidth(j, (int) (currentWidth * 1.5));
+				sheet.autoSizeColumn(j);
+				int currentWidth = sheet.getColumnWidth(j);
+				sheet.setColumnWidth(j, (int) (currentWidth * 1.5));
 			}
 
+			//データを挿入する
 			for (int i = 0; i < data.size(); i++) {
 				Row row = sheet.createRow(i + 1);
 				ShuturyokuDTO dto = data.get(i);
@@ -260,9 +275,10 @@ public class ShuturyokuController {
 				}
 			}
 
+			//出力設定
 			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 			String fileName = "出力情報.xlsx";
-			fileName = java.net.URLEncoder.encode(fileName, "UTF-8"); // 编码文件名（防乱码）
+			fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
 			response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
 			workbook.write(response.getOutputStream());
 		}

@@ -13,6 +13,25 @@
 	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
 
 	<style>
+		html,
+		body {
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			overflow-x: auto;
+			overflow-y: auto;
+		}
+
+		.main-content {
+			overflow-x: auto;
+			overflow-y: auto;
+		}
+
+		.panel-body,
+		#table-content {
+			overflow-x: auto;
+		}
+
 		.navbar {
 			position: fixed;
 			top: 0;
@@ -122,7 +141,6 @@
 		#ichiran {
 			width: 1060px;
 			table-layout: fixed;
-			width: 100%;
 			word-wrap: break-word;
 		}
 
@@ -145,42 +163,43 @@
 			width: 100vw;
 			height: 100vh;
 			background: rgba(0, 0, 0, 0.45);
-			display: flex;
+			display: none;
 			align-items: center;
 			justify-content: center;
 			z-index: 9999;
+			
 		}
 
 		.dialog {
 			background: white;
 			border-radius: 12px;
 			width: 400px;
-			height: 200px;
+			height: auto;
+			max-height: 90vh;
+			overflow-y: auto;
+			padding-bottom: 50px;
 			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
+			z-index: 10000;
 		}
 
 		.dlgTitle {
-			background-color: #d9534f;
-			margin: 0;
-			border-radius: 12px 12px 0 0;
+			background-color: #f0ad4e;
+			margin-top: 0;
+			margin-bottom: 42px;
+			border-radius: 12px 12px 0px 0px;
 			padding: 10px;
-			text-align: center;
-			color: white;
-			font-weight: bold;
+			border-bottom: 1px solid gray;
+			color: white
 		}
 
 		.center {
 			text-align: center;
 		}
 
-		#dialogBtns {
+		.dialogBtns {
 			display: flex;
 			justify-content: center;
 			gap: 20px;
-			margin-bottom: 20px;
 		}
 	</style>
 </head>
@@ -230,16 +249,16 @@
 	<div class="main-content">
 		<div id="table-content">
 			<div class="col-lg-12">
-				<div id="overlay" class="overlay" style="display:none;" role="dialog" aria-modal="true">
+				<div id="overlay" class="overlay" role="dialog" aria-modal="true">
 					<div class="dialog" tabindex="-1">
-						<h4 class="dlgTitle">削除選択</h4>
+						<h4 class="dlgTitle">確認</h4>
 						<div class="center">
 							<h5 id="confirmText">選択したユーザーを削除しますが、よろしいですか？</h5>
 							<br>
-						</div>
-						<div id="dialogBtns">
-							<button id="btnOk" class="btn btn-success">確定</button>
-							<button id="btnNo" class="btn btn-warning">取消</button>
+							<div id="dialogBtns">
+								<button id="btnOk" class="btn btn-danger">削除</button>　
+								<button id="btnNo" class="btn btn-warning">キャンセル</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -280,86 +299,111 @@
 							</form>
 						</div>
 					</div>
-				</div></div>
 				</div>
+			</div>
+		</div>
+	</div>
+	<div id="logoutOverlay" class="overlay">
+		<div class="dialog">
+			<p class="dlgTitle">確認</p>
+			<div class="center">
+				<p>本当にログアウトしますか？</p>
+				<br>
+				<div class="dialogBtns">
+				<button id="logoutYes" class="btn btn-success">確認</button>
+				<button id="logoutNo" class="btn btn-warning">戻る</button>
+			</div>
+			</div>
+			
+		</div>
+	</div>
+	
+	<div id="deleteSuccessOverlay" class="overlay">
+		<div class="dialog">
+			<p class="dlgTitle" style="background-color: #31b0d5;">通知</p>
+			<div class="center">
+				<p>削除できました。</p>
+				<br>
+				<div class="dialogBtns">
+					<button id="deleteSuccessOk" class="btn btn-warning">確認</button>
 				</div>
-				<div id="logoutOverlay" style="
-				    position: fixed;
-				    top: 0; left: 0;
-				    width: 100%; height: 100%;
-				    background: rgba(0, 0, 0, 0.5);
-				    display: none;
-				    justify-content: center;
-				    align-items: center;
-				    z-index: 9999;">
-					<div class="dialog">
-						<p class="dlgTitle">ログアウト確認</p>
-						<div class="center">
-							<p>本当にログアウトしますか？</p>
-						</div>
-						<div id="dialogBtns">
-							<button id="logoutYes" class="btn btn-success">確定</button>
-							<button id="logoutNo" class="btn btn-warning">キャンセル</button>
-						</div>
-					</div>
-				</div>
-				<script>
-					document.addEventListener('DOMContentLoaded', function () {
-						let targetForm = null;
+			</div>
+			
+		</div>
+	</div>
+	
+	<script>
+		$(document).ready(function () {
+			let targetForm = null;
 
-						document.querySelectorAll('.deleteBtn').forEach(btn => {
-							btn.addEventListener('click', function () {
-								targetForm = this.closest('form'); // 
-								document.getElementById('overlay').style.display = 'flex';
-							});
-						});
+			//削除ボタン確認
+			$(".deleteBtn").on("click", function () {
+				targetForm = $(this).closest("form");
+				$("#overlay").css("display", "flex");
+			});
 
-				document.getElementById('btnNo').addEventListener('click', function () {
-					document.getElementById('overlay').style.display = 'none';
-					targetForm = null;
-				});
+			$("#btnNo").on("click", function () {
+				$("#overlay").hide();
+				targetForm = null;
+			});
 
-				document.getElementById('btnOk').addEventListener('click', function () {
-					if (targetForm) targetForm.submit();
-				});
-				const logoutLink = document.getElementById('logoutLink');
-				const logoutOverlay = document.getElementById('logoutOverlay');
-				const logoutYes = document.getElementById('logoutYes');
-				const logoutNo = document.getElementById('logoutNo');
-
-				if (logoutLink) {
-					logoutLink.addEventListener('click', function (e) {
-						e.preventDefault(); 
-						logoutOverlay.style.display = 'flex';
-					});
-				}
-
-				if (logoutNo) {
-					logoutNo.addEventListener('click', function () {
-						logoutOverlay.style.display = 'none';
-					});
-				}
-
-				if (logoutYes) {
-					logoutYes.addEventListener('click', function () {
-						window.location.href = '/logout';
+			$("#btnOk").on("click", function () {
+				if (targetForm) {
+					// Ajaxで削除実行
+					$.ajax({
+						url: targetForm.attr("action"),
+						type: targetForm.attr("method"),
+						data: targetForm.serialize(),
+						success: function () {
+							$("#overlay").hide();
+							$("#deleteSuccessOverlay").css("display", "flex");
+						},
+						error: function () {
+							$("#overlay").hide();
+							alert("削除に失敗しました。");
+						}
 					});
 				}
 			});
-
-			$(function () {
-				$('#user').on('click', function (e) {
-					e.stopPropagation();
-					$('#dropdownMenu').toggle();
-				});
-
-				$(document).on('click', function () {
-					$('#dropdownMenu').hide();
-				});
+			
+			$("#deleteSuccessOk").on("click", function () {
+				// ユーザー一覧画面に戻る
+				window.location.href = "/yuzaichiran";
 			});
 
+			//ログアウト確認
+			const $logoutLink = $("#logoutLink");
+			const $logoutOverlay = $("#logoutOverlay");
+			const $logoutYes = $("#logoutYes");
+			const $logoutNo = $("#logoutNo");
 
-		</script>
-		</body>
+			$logoutLink.on("click", function (e) {
+				e.preventDefault();
+				$logoutOverlay.css("display", "flex");
+			});
+
+			$logoutNo.on("click", function () {
+				$logoutOverlay.hide();
+			});
+
+			$logoutYes.on("click", function () {
+				window.location.href = "/logout";
+			});
+		});
+
+		$(function () {
+			$('#user').on('click', function (e) {
+				e.stopPropagation();
+				$('#dropdownMenu').toggle();
+			});
+
+			$(document).on('click', function () {
+				$('#dropdownMenu').hide();
+			});
+		});
+
+
+	</script>
+</body>
 
 </html>

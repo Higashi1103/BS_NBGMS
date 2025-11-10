@@ -155,32 +155,33 @@
 			vertical-align: middle;
 			border: 1px solid rgb(229, 229, 229);
 		}
-		
+
 		.panel-heading {
-    		display: flex;
-    		justify-content: space-between;
-    		align-items: center;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
 		}
 
 		.dialog {
 			background: white;
 			border-radius: 12px;
 			width: 400px;
-			height: 200px;
+			height: auto;
+			max-height: 90vh;
+			overflow-y: auto;
+			padding-bottom: 50px;
 			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
+			z-index: 10000;
 		}
 
 		.dlgTitle {
-			background-color: #d9534f;
-			margin: 0;
-			border-radius: 12px 12px 0 0;
+			background-color: #f0ad4e;
+			margin-top: 0;
+			margin-bottom: 42px;
+			border-radius: 12px 12px 0px 0px;
 			padding: 10px;
-			text-align: center;
-			color: white;
-			font-weight: bold;
+			border-bottom: 1px solid gray;
+			color: white
 		}
 
 		.center {
@@ -191,37 +192,49 @@
 			display: flex;
 			justify-content: center;
 			gap: 20px;
-			margin-bottom: 20px;
 		}
 
+		.overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.45);
+			display: none;
+			align-items: center;
+			justify-content: center;
+			z-index: 9999;
+
+		}
 	</style>
-	</head>
-	
-	<body>
-		<!-- ヘッド -->
-		<nav class="navbar" style="margin-bottom: 0">
-			<div id="title">技術者管理システム</div>
-	
-			<!-- ログアウトバタン -->
-			<div id="user">
-				<img src="/image/user.png" height="25px">
-				<div class="dropdown-menu" id="dropdownMenu">
-					<a href="/maipeji">マイページ</a>
-					<a href="/yuzaichiran">ユーザー一覧</a>
-					<a href="/logout" id="logoutLink">ログアウト</a>
-				</div>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="/maipeji">マイページ</a>
+				<a href="/yuzaichiran">ユーザー一覧</a>
+				<a href="/logout" id="logoutLink">ログアウト</a>
 			</div>
-	
-			<!-- 左ナビ -->
-			<div class="sidebar">
-				<div class="sidebar-nav">
-					<div>
-						<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
-								style="margin-right: 5px;">クラス情報</a>
-					</div>
-					<div>
-						<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
-								style="margin-right: 5px;">学生情報</a>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+							style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+							style="margin-right: 5px;">学生情報</a>
 				</div>
 				<div>
 					<a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
@@ -255,17 +268,17 @@
 					</div>
 					<!--クラス年別入力-->
 					<div><span style="padding-left:4px;">クラス年別：</span>
-						<input type="text" id="kurasuInput" name="year" placeholder="（例: 2025）"
-							class="form-control" pattern="20\d{2}" title="20で始まる4桁の数字を入力してください"
-							style="margin-left: 5px;">
+						<input type="text" id="kurasuInput" name="year" placeholder="（例: 2025）" class="form-control"
+							pattern="20\d{2}" title="20で始まる4桁の数字を入力してください" style="margin-left: 5px;">
 					</div>
 
 				</div>
 				<div class="panel panel-default">
 					<div class="panel-heading d-flex justify-between">
-        <strong>クラス情報</strong>
-        <button type="button" class="btn btn-xs btn-primary select-toggle" data-target="#classPanel">全選</button>
-    </div>
+						<strong>クラス情報</strong>
+						<button type="button" class="btn btn-xs btn-primary select-toggle"
+							data-target="#classPanel">すべて選択</button>
+					</div>
 					<div class="panel-body outputi" id="classPanel">
 						<table class="field-table">
 							<tr>
@@ -294,7 +307,8 @@
 				<div class="panel panel-default">
 					<div class="panel-heading d-flex justify-between">
 						<strong>学生情報</strong>
-						<button type="button" class="btn btn-xs btn-primary select-toggle" data-target="#gakuseiPanel">全選</button>
+						<button type="button" class="btn btn-xs btn-primary select-toggle"
+							data-target="#gakuseiPanel">すべて選択</button>
 					</div>
 					<div class="panel-body outputi" id="gakuseiPanel">
 						<table class="field-table">
@@ -363,7 +377,8 @@
 				<div class="panel panel-default">
 					<div class="panel-heading d-flex justify-between">
 						<strong>ポイント履歴</strong>
-						<button type="button" class="btn btn-xs btn-primary select-toggle" data-target="#tensuPanel">全選</button>
+						<button type="button" class="btn btn-xs btn-primary select-toggle"
+							data-target="#tensuPanel">すべて選択</button>
 					</div>
 					<div class="panel-body outputi" id="tensuPanel">
 						<table class="field-table">
@@ -401,7 +416,8 @@
 				<div class="panel panel-default">
 					<div class="panel-heading d-flex justify-between">
 						<strong>ヒアリング履歴</strong>
-						<button type="button" class="btn btn-xs btn-primary select-toggle" data-target="#hiaringuPanel">全選</button>
+						<button type="button" class="btn btn-xs btn-primary select-toggle"
+							data-target="#hiaringuPanel">すべて選択</button>
 					</div>
 					<div class="panel-body outputi" id="hiaringuPanel">
 						<table class="field-table">
@@ -462,92 +478,85 @@
 					<button type="submit" class="btn btn-success">出力</button>
 				</div>
 			</form>
+		</div>
+	</div>
+
+	<div id="logoutOverlay" class="overlay">
+		<div class="dialog">
+			<p class="dlgTitle">確認</p>
+			<div class="center">
+				<p>本当にログアウトしますか？</p>
+				<br>
 			</div>
+			<div id="dialogBtns">
+				<button id="logoutYes" class="btn btn-success">確認</button>
+				<button id="logoutNo" class="btn btn-warning">戻る</button>
 			</div>
-			
-			<div id="logoutOverlay" style="
-			    position: fixed;
-			    top: 0; left: 0;
-			    width: 100%; height: 100%;
-			    background: rgba(0, 0, 0, 0.5);
-			    display: none;
-			    justify-content: center;
-			    align-items: center;
-			    z-index: 9999;">
-				<div class="dialog">
-					<p class="dlgTitle">ログアウト確認</p>
-					<div class="center">
-						<p>本当にログアウトしますか？</p>
-					</div>
-					<div id="dialogBtns">
-						<button id="logoutYes" class="btn btn-success">確定</button>
-						<button id="logoutNo" class="btn btn-warning">キャンセル</button>
-					</div>
-				</div>
-			</div>
-			<script>
-				document.addEventListener('DOMContentLoaded', function () {
+		</div>
+	</div>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
 
-					const logoutLink = document.getElementById('logoutLink');
-					const logoutOverlay = document.getElementById('logoutOverlay');
-					const logoutYes = document.getElementById('logoutYes');
-					const logoutNo = document.getElementById('logoutNo');
+			const logoutLink = document.getElementById('logoutLink');
+			const logoutOverlay = document.getElementById('logoutOverlay');
+			const logoutYes = document.getElementById('logoutYes');
+			const logoutNo = document.getElementById('logoutNo');
 
-					if (logoutLink) {
-						logoutLink.addEventListener('click', function (e) {
-							e.preventDefault(); // 阻止直接跳转
-							logoutOverlay.style.display = 'flex';
-						});
-					}
-
-					if (logoutNo) {
-						logoutNo.addEventListener('click', function () {
-							logoutOverlay.style.display = 'none';
-						});
-					}
-
-					if (logoutYes) {
-						logoutYes.addEventListener('click', function () {
-							window.location.href = '/logout';
-						});
-					}
+			if (logoutLink) {
+				logoutLink.addEventListener('click', function (e) {
+					e.preventDefault(); // 阻止直接跳转
+					logoutOverlay.style.display = 'flex';
 				});
+			}
 
-
-				$(function () {
-					$('#user').on('click', function (e) {
-						e.stopPropagation();
-						$('#dropdownMenu').toggle();
-					});
-
-					$(document).on('click', function () {
-						$('#dropdownMenu').hide();
-					});
+			if (logoutNo) {
+				logoutNo.addEventListener('click', function () {
+					logoutOverlay.style.display = 'none';
 				});
-				$(document).ready(function () {
-					$('#dataTables-example').DataTable({
-						responsive: true
-					});
+			}
+
+			if (logoutYes) {
+				logoutYes.addEventListener('click', function () {
+					window.location.href = '/logout';
+				});
+			}
 		});
-		
+
+
+		$(function () {
+			$('#user').on('click', function (e) {
+				e.stopPropagation();
+				$('#dropdownMenu').toggle();
+			});
+
+			$(document).on('click', function () {
+				$('#dropdownMenu').hide();
+			});
+		});
 		$(document).ready(function () {
-    $(".select-toggle").click(function () {
-        const target = $(this).data("target");
-        const checkboxes = $(target).find("input[type='checkbox']");
+			$('#dataTables-example').DataTable({
+				responsive: true
+			});
+		});
 
-        const allChecked = checkboxes.length > 0 && checkboxes.filter(":checked").length === checkboxes.length;
+		$(document).ready(function () {
+			$(".select-toggle").click(function () {
+				const target = $(this).data("target");
+				const checkboxes = $(target).find("input[type='checkbox']");
 
-        if (allChecked) {
-            // 全部取消
-            checkboxes.prop("checked", false);
-            $(this).text("全選").removeClass("btn-danger").addClass("btn-primary");
-        } else {
-            // 全部选中
-            checkboxes.prop("checked", true);
-            $(this).text("全解除").removeClass("btn-primary").addClass("btn-danger");
-        }
-    });
-});
+				const allChecked = checkboxes.length > 0 && checkboxes.filter(":checked").length === checkboxes.length;
+
+				if (allChecked) {
+					// 全部取消
+					checkboxes.prop("checked", false);
+					$(this).text("すべて選択").removeClass("btn-danger").addClass("btn-primary");
+				} else {
+					// 全部选中
+					checkboxes.prop("checked", true);
+					$(this).text("すべて解除").removeClass("btn-primary").addClass("btn-danger");
+				}
+			});
+		});
 	</script>
 </body>
 

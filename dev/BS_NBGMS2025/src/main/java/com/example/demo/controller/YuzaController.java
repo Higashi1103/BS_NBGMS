@@ -27,7 +27,6 @@ public class YuzaController {
 	@RequestMapping(value = "/loginCheck")
 	public String loginCheck(Yuza yuza, Model model, HttpSession session) {
 		Yuza kekka = yuzaService.loginCheck(yuza);
-
 		if (kekka != null) {
 			session.setAttribute("currentYuza", kekka);
 			return "redirect:/gakusei";

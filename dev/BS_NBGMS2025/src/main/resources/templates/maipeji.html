@@ -11,8 +11,27 @@
 	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
-
+	
 	<style>
+		html,
+		body {
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+			overflow-x: auto;
+			overflow-y: auto;
+		}
+	
+		.main-content {
+			overflow-x: auto;
+			overflow-y: auto;
+		}
+	
+		.panel-body,
+		#table-content {
+			overflow-x: auto;
+		}
+	
 		.navbar {
 			position: fixed;
 			top: 0;
@@ -28,11 +47,11 @@
 			z-index: 1000;
 			border-bottom: 1px solid #e5e5e5;
 		}
-
+	
 		a {
 			letter-spacing: 0.05em;
 		}
-
+	
 		#title {
 			position: absolute;
 			left: 10px;
@@ -41,7 +60,7 @@
 			font-size: 18px;
 			color: #777;
 		}
-
+	
 		#user {
 			position: absolute;
 			right: 20px;
@@ -49,7 +68,7 @@
 			transform: translateY(-50%);
 			cursor: pointer;
 		}
-
+	
 		.dropdown-menu {
 			display: none;
 			position: absolute;
@@ -63,7 +82,7 @@
 			min-width: 110px;
 			z-index: 2000;
 		}
-
+	
 		.dropdown-menu a {
 			display: block;
 			padding: 8px 10px;
@@ -71,12 +90,12 @@
 			text-decoration: none;
 			font-size: 14px;
 		}
-
+	
 		.dropdown-menu a:hover {
 			background-color: #f2f2f2;
 		}
-
-
+	
+	
 		.sidebar {
 			position: fixed;
 			top: 51px;
@@ -88,14 +107,14 @@
 			box-sizing: border-box;
 			border-right: 1px solid #e5e5e5;
 		}
-
+	
 		.sidebar-nav div {
 			margin: 0;
 			padding: 10px;
 			border-bottom: 1px solid #e5e5e5;
-
+	
 		}
-
+	
 		.sidebar-nav div a {
 			color: #337ab7;
 			font-size: 14px;
@@ -103,12 +122,12 @@
 			display: flex;
 			align-items: center;
 		}
-
+	
 		.sidebar-nav div:hover {
 			background-color: #e6e6e6;
 			color: #fff;
 		}
-
+	
 		.main-content {
 			margin-top: 30px;
 			margin-left: 240px;
@@ -118,73 +137,72 @@
 			display: flex;
 			justify-content: center;
 		}
-
+	
 		#shousaitable {
-			width: 1060px;
+			width: 1090px;
 			table-layout: auto;
 		}
-		
+	
 		.dialog {
 			background: white;
 			border-radius: 12px;
 			width: 400px;
-			height: 200px;
+			height: auto;
+			max-height: 90vh;
+			overflow-y: auto;
+			padding-bottom: 50px;
 			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
+			z-index: 10000;
 		}
-
+	
 		.dlgTitle {
-			background-color: #d9534f;
-			margin: 0;
-			border-radius: 12px 12px 0 0;
+			background-color: #f0ad4e;
+			margin-top: 0;
+			margin-bottom: 42px;
+			border-radius: 12px 12px 0px 0px;
 			padding: 10px;
-			text-align: center;
-			color: white;
-			font-weight: bold;
+			border-bottom: 1px solid gray;
+			color: white
 		}
-
+	
 		.center {
 			text-align: center;
 		}
-
+	
 		#dialogBtns {
 			display: flex;
 			justify-content: center;
 			gap: 20px;
-			margin-bottom: 20px;
 		}
-		
 	</style>
-</head>
-
-<body>
-	<!-- ヘッド -->
-	<nav class="navbar" style="margin-bottom: 0">
-		<div id="title">技術者管理システム</div>
-
-		<!-- ログアウトバタン -->
-		<div id="user">
-			<img src="/image/user.png" height="25px">
-			<div class="dropdown-menu" id="dropdownMenu">
-				<a href="/maipeji">マイページ</a>
-				<a href="/yuzaichiran">ユーザー一覧</a>
-				<a href="/logout" id="logoutLink">ログアウト</a>
+	</head>
+	
+	<body>
+		<!-- ヘッド -->
+		<nav class="navbar" style="margin-bottom: 0">
+			<div id="title">技術者管理システム</div>
+	
+			<!-- ログアウトバタン -->
+			<div id="user">
+				<img src="/image/user.png" height="25px">
+				<div class="dropdown-menu" id="dropdownMenu">
+					<a href="/maipeji">マイページ</a>
+					<a href="/yuzaichiran">ユーザー一覧</a>
+					<a href="/logout" id="logoutLink">ログアウト</a>
+				</div>
 			</div>
-		</div>
-
-		<!-- 左ナビ -->
-		<div class="sidebar">
-			<div class="sidebar-nav">
-				<div>
-					<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
-							style="margin-right: 5px;">クラス情報</a>
-				</div>
-				<div>
-					<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
-							style="margin-right: 5px;">学生情報</a>
-				</div>
+	
+			<!-- 左ナビ -->
+			<div class="sidebar">
+				<div class="sidebar-nav">
+					<div>
+						<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+								style="margin-right: 5px;">クラス情報</a>
+					</div>
+					<div>
+						<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+								style="margin-right: 5px;">学生情報</a>
+					</div>
 				<div>
 					<a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
 							style="margin-right: 5px;">ポイント履歴</a>
@@ -234,15 +252,16 @@
 		    align-items: center;
 		    z-index: 9999;">
 			<div class="dialog">
-				<p class="dlgTitle">ログアウト確認</p>
-				<div class="center">
-					<p>本当にログアウトしますか？</p>
+					<p class="dlgTitle">確認</p>
+					<div class="center">
+						<p>本当にログアウトしますか？</p>
+						<br>
+					</div>
+					<div id="dialogBtns">
+						<button id="logoutYes" class="btn btn-success">確認</button>
+						<button id="logoutNo" class="btn btn-warning">戻る</button>
+					</div>
 				</div>
-				<div id="dialogBtns">
-					<button id="logoutYes" class="btn btn-success">確定</button>
-					<button id="logoutNo" class="btn btn-warning">キャンセル</button>
-				</div>
-			</div>
 		</div>
 		
 		<script>
