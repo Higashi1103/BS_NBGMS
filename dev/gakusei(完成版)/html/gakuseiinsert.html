@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>技術者管理システム</title>
+    <meta charset="utf-8">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
+
+    <!-- 新規画面内容チェックのJS -->
+    <script th:src="@{/js/insertCheckForm.js}"></script>
+    <!-- 拡大鏡アイコンのインポート-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- 拡大鏡のJS-->
+    <script th:src="@{/js/searchKurasu.js}"></script>
+
+    <style>
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 51px;
+            background-color: #f9f9f9;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        #title {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #777;
+        }
+
+        #user {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            transform: translateX(-100px);
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            min-width: 100px;
+            z-index: 2000;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f2f2f2;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 51px;
+            left: 0;
+            width: 250px;
+            height: calc(100% - 51px);
+            background-color: #f9f9f9;
+            color: rgb(48, 48, 48);
+            box-sizing: border-box;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        .sidebar-nav div {
+            margin: 0;
+            padding: 10px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .sidebar-nav div a {
+            color: #454545;
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-nav div:hover {
+            background-color: #e6e6e6;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-top: 30px;
+            margin-left: 240px;
+            padding: 40px;
+            min-height: calc(100vh - 51px);
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 有 “必须” 字段的 span 样式 */
+        .span-css {
+            background-color: #d9534f;
+            color: #fff;
+            font-size: 12px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            align-self: center;
+            /* 与文字垂直对齐 */
+        }
+
+        /* label + input 一起放 flex，自动对齐高度 */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            /* label 在上，input 在下 */
+            margin-bottom: 12px;
+        }
+
+        /* label 基本样式 */
+        .label-css {
+            display: flex;
+            align-items: center;
+            /* 强制让文字和“必須”标签垂直居中对齐 */
+            margin-bottom: 4px;
+            /* label 和输入框间距 */
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: 0.03em;
+        }
+
+        /* 弹框样式 */
+        .overlay {
+            display: none;
+            position: fixed;
+            /* 固定在视口，而不是文档流 */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            /* 覆盖整个可视宽度 */
+            height: 100vh;
+            /* 覆盖整个可视高度 */
+            background: rgba(0, 0, 0, 0.45);
+            /* 半透明遮罩 */
+            place-items: center;
+            z-index: 9999;
+            /* 超高层级，保证在所有元素上方 */
+        }
+
+        .dialog {
+            background: white;
+            border-radius: 12px;
+            width: 400px;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-bottom: 50px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            /* 比遮罩略高，但一般只要父层够高就行 */
+        }
+
+        .dlgTitle {
+            background-color: #d9534f;
+            margin-top: 0;
+            margin-bottom: 42px;
+            border-radius: 12px 12px 0px 0px;
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            color: white
+        }
+
+        .dlgTitleMsg {
+            background-color: #5bc0de;
+            margin-top: 0;
+            margin-bottom: 42px;
+            border-radius: 12px 12px 0px 0px;
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            color: white
+        }
+
+        .dlgTitleConfirm {
+            background-color: #f0ad4e;
+            margin-top: 0;
+            margin-bottom: 42px;
+            border-radius: 12px 12px 0px 0px;
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            color: white
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .update {
+            margin-right: 15px;
+        }
+
+        .margin-left {
+            margin-left: auto;
+        }
+
+        .margin-bottom {
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .float-right {
+            float: right;
+        }
+
+        .has-error {
+            border-color: #a94442;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px rgba(169, 68, 66, .6);
+        }
+
+        .has-success {
+            border-color: #3c763d;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0px 6px rgba(0, 0, 0, .075);
+        }
+
+        /* 新增：新版统一用 flex 包含错误提示 + 计数 */
+        .feedback-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3px;
+            min-height: 18px;
+            /* 统一所有行的视觉高度 */
+        }
+
+        .feedback-line .childDiv {
+            color: #d9534f;
+            /* 红色错误提示 */
+            font-size: 14px;
+        }
+
+        .feedback-line .count-text {
+            color: #555;
+            /* 右侧灰色计数字体 */
+            font-size: 14px;
+            white-space: nowrap;
+            /* 防止换行 */
+        }
+
+        /* 正确输入 ✓ 显示绿色 */
+        .feedback-line .childDiv:contains("✓") {
+            color: #3c763d;
+            font-weight: bold;
+        }
+
+        /* textarea 固定长度，只能拉高度 */
+        .resizable-height {
+            width: 100%;
+            min-height: 100px;
+            max-height: 300px;
+            resize: vertical;
+        }
+
+
+        /* ==================== クラス検索モーダル css样式 ==================== */
+        .modal-content.panel-primary .modal-header {
+            background-color: #337ab7;
+            border-color: #2e6da4;
+            color: white;
+            text-align: center;
+            /* 如果团队要求标题靠左，可改为 left */
+            position: relative;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .modal-header .close {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            opacity: 1;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .modal-header .close:hover {
+            color: #d9edf7;
+        }
+
+        .modal-footer.panel-footer {
+            background-color: #f5f5f5;
+            border-top: 1px solid #ddd;
+        }
+
+        .modal-content {
+            border: 2px solid #337ab7;
+            border-radius: 8px;
+        }
+        
+        /* 统一所有 form-control 对齐方式，防止左右列错位 */
+		.form-group .form-control {
+		    height: 34px;
+		    line-height: 1.42857;
+		    display: flex;
+		    align-items: center;   /* 垂直对齐 */
+		    vertical-align: middle;
+		}
+
+		/* 统一只读输入框（解决クラス名、点数对齐问题） */
+		.form-control[readonly] {
+		    background-color: #f5f5f5 !important;
+		    height: 34px !important;
+		    line-height: 1.42857 !important;
+		    vertical-align: middle;
+		}
+		
+		/* 让 feedback-line 高度一致（防止错误提示撑高） */
+		.feedback-line {
+		    min-height: 20px !important;
+		}
+		
+		/* textarea 单独修复，保持多行但不破坏对齐 */
+		textarea.form-control {
+		    display: block;
+		    line-height: 1.42857;
+		    min-height: 100px;
+		    vertical-align: middle;
+		}
+        
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div id="title">技術者管理システム</div>
+
+        <div id="user">
+            <img src="/image/user.png" height="25px">
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="#">ログアウト</a>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-nav">
+                <div><a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+                            style="margin-right: 5px;">クラス情報</a></div>
+                <div><a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+                            style="margin-right: 5px;">学生情報</a></div>
+                <div><a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
+                            style="margin-right: 5px;">ポイント履歴</a></div>
+                <div><a th:href="@{/hiaringu}"><img src="/image/hiaringu.png" height="18px"
+                            style="margin-right: 5px;">ヒアリング履歴</a></div>
+                <div><a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png" height="18px"
+                            style="margin-right: 5px;">出力</a></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div id="table-content">
+            <div class="col-lg-12">
+                <div class="panel panel-default" style="width: 1090px;">
+                    <div class="panel-heading">学生新規入力</div>
+                    <div id="panel-body" class="panel-body">
+
+                        <!-- 新规画面内容 -->
+                        <form id="insertForm">
+                            <div class="row">
+                                <!-- 左列 -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="name" class="label-css">
+                                            学生名前:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <input id="name" type="text" name="namae" class="form-control" maxlength="6" placeholder="名前を入力してください">
+
+                                        <div class="feedback-line">
+                                            <span id="nameError" class="childDiv"></span>
+                                            <span id="nameCount" class="count-text"><0/6></span>
+                                        </div>
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="gender" class="label-css">
+                                            性別:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <select id="gender" name="seibetsu" class="form-control">
+                                            <option value="">性別を選択してください</option>
+                                            <option value="男">男</option>
+                                            <option value="女">女</option>
+                                        </select>
+
+                                        <!-- 一定要加上这个结构，即使内容为空 -->
+                                        <div class="feedback-line">
+                                            <span id="genderError" class="childDiv"></span>
+                                            <span class="count-text"></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="birthday" class="label-css">
+                                            生年月日:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <input id="birthday" type="text" name="seinengappi" class="form-control" maxlength="10" placeholder="生年月日を入力してください　形式：YYYY/MM/DD　また　YYYYMMDD">
+
+                                        <div class="feedback-line">
+                                            <span id="birthdayError" class="childDiv"></span>
+                                            <span id="birthdayCount" class="count-text"><0/10></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="education" class="label-css">
+                                            最終学歴:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <select id="education" name="saishuGakureki" class="form-control">
+                                            <option value="">最終学歴を選択してください</option>
+                                            <option value="大学">大学</option>
+                                            <option value="大学院">大学院</option>
+                                            <option value="短期大学">短期大学</option>
+                                            <option value="専門学校">専門学校</option>
+                                            <option value="高校">高校</option>
+                                        </select>
+
+                                        <!-- 一定要加上这个结构，即使内容为空 -->
+                                        <div class="feedback-line">
+                                            <span id="educationError" class="childDiv"></span>
+                                            <span class="count-text"></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="languagelevel" class="label-css">
+                                            語学力:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <select id="languagelevel" name="gogakuryoku" class="form-control">
+                                            <option value="">語学力を選択してください</option>
+                                            <option value="N1">N1</option>
+                                            <option value="N2">N2</option>
+                                            <option value="N3">N3</option>
+                                            <option value="N4">N4</option>
+                                            <option value="N5">N5</option>
+                                        </select>
+
+                                        <!-- 一定要加上这个结构，即使内容为空 -->
+                                        <div class="feedback-line">
+                                            <span id="languagelevelError" class="childDiv"></span>
+                                            <span class="count-text"></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                </div>
+
+                                <!-- 右列 -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="kurasuId" class="label-css">
+                                            クラス名:
+                                            <span class="span-css">必須</span>
+                                        </label>
+
+                                        <!-- 输入组 + 放大镜按钮 -->
+                                        <div class="input-group">
+                                            <input id="kurasuInput" name="kurasuNamae" class="form-control"
+                                                placeholder="クラス名を入力してください" maxlength="10">
+                                            <span class="input-group-btn">
+                                                <button id="openKurasuModal" class="btn btn-default" type="button">
+                                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+
+                                        <div class="feedback-line">
+                                            <span id="kurasuError" class="childDiv"></span>
+                                            <span id="kurasuCount" class="count-text"><0/10></span>
+                                        </div>
+
+                                        <!-- 隠したクラスID（提交用） -->
+                                        <input type="hidden" id="kurasuId" name="kurasuId">
+                                    </div>
+                                    <br>
+
+                                    <!-- クラス検索モーダル -->
+                                    <div id="searchKurasuModal" class="modal fade" tabindex="-1" role="dialog">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content panel panel-primary">
+                                                <div class="modal-header panel-heading">
+                                                    <h4 class="modal-title">クラス検索</h4>
+                                                    <button type="button" class="close"
+                                                        data-dismiss="modal">&times;</button>
+                                                </div>
+                                                <div class="modal-body panel-body">
+                                                    <input type="text" id="searchKurasuNamae"
+                                                        placeholder="クラス名を入力してください" class="form-control mb-2">
+                                                    <ul id="searchKurasuResult"
+                                                        style="max-height: 200px; overflow-y: auto; padding-left: 0; list-style-type: none; margin: 0;">
+                                                    </ul>
+                                                </div>
+
+                                                <div class="modal-footer panel-footer">
+                                                    <button id="confirmSelection" type="button" class="btn btn-primary"
+                                                        disabled>確定</button>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="score" class="label-css">
+                                            点数:
+                                            <span class="span-css">必須</span>
+                                        </label>
+                                        <input id="score" name="tensu" class="form-control" value="20" readonly
+                                            style="background-color:#f5f5f5;">
+                                        <input type="hidden" name="tensu" value="20"> <!-- 送信用 -->
+
+                                        <!-- 一定要加上这个结构，即使内容为空 -->
+                                        <div class="feedback-line">
+                                            <span id="scoreError" class="childDiv"></span>
+                                            <span class="count-text"></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="evaluation" class="label-css">
+                                            評価:
+                                        </label>
+                                        <input id="evaluation" name="hyouka" class="form-control" maxlength="100">
+
+                                        <div class="feedback-line">
+                                            <span id="evaluationError" class="childDiv"></span>
+                                            <span id="evaluationCount" class="count-text"><0/100></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                    <div class="form-group">
+                                        <label for="other" class="label-css">
+                                            備考:
+                                        </label>
+                                        <textarea id="other" name="sonota" class="form-control resizable-height"  maxlength="100">
+                                        </textarea>
+
+                                        <div class="feedback-line">
+                                            <span id="otherError" class="childDiv"></span>
+                                            <span id="otherCount" class="count-text"><0/100></span>
+                                        </div>
+
+                                    </div>
+                                    <br>
+
+                                </div>
+                            </div>
+
+                            <!-- 按钮居右对齐 -->
+                            <div class="text-right" style="margin-top: 15px;">
+                                <input type="button" value="登録" id="insertBtn" class="btn btn-success"
+                                    style="margin-right: 15px;">
+                                <input type="button" value="戻る" th:onclick="|location.href='@{/gakusei}'|"
+                                    class="btn btn-warning">
+                            </div>
+
+                        </form>
+
+                        <!-- 弹框框架 -->
+                        <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+                            <div id="dialog" class="dialog" tabindex="-1">
+                                <h4 class="dlgTitle">入力項目確認</h4>
+                                <div class="center">
+                                </div>
+                                <div id="dialogBtns">
+                                    <input id="confirmInsert" type="button" value="確認" class="btn btn-info">
+                                    <input id="returnInsert" type="button" value="キャンセル" class="btn btn-warning">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+    $(function () {
+
+        // 放在所有逻辑最上面，页面加载完成时立刻清理備考的 textarea 多余空白
+        const $other = $('#other');
+        $other.val($other.val().replace(/^\s+/, '')); // 去掉开头空格或换行，防止光标偏移，让选中 textarea 文本框时光标始终在最前面
+
+        // 共通チェック関数（全体確認用）
+        function insertCheckForm() {
+            // 触发所有 blur 检查
+            $('#name, #gender, #birthday, #education, #languagelevel, #kurasuInput').blur();
+
+            // 检查是否还有错误项
+            return $('.has-error').length === 0;
+        }
+
+        // 新規ボタンクリック時
+        $('#insertBtn').click(function () {
+            // 调用共通チェック
+            if (!insertCheckForm()) {
+                // 自动聚焦第一个错误字段
+                $('.has-error:first').find('input, select').focus();
+
+                // 清除旧事件
+                $('#overlay').off('keydown.focusTrap');
+
+                // 输入内容有误的话 → 弹出エラー弹框
+                $('#overlay').fadeIn({
+                    duration: 270,
+                    start: function () {
+                        $(this).css({ 'display': 'grid', 'place-items': 'center' });
+                    }
+                });
+
+                // エラー弹框
+                $('#overlay').html(`
+                    <div id="dialog" class="dialog" tabindex="-1">
+                        <h4 class="dlgTitle">エラー</h4>
+                        <div class="center">
+                            <h5>新規不可、入力項目を確認してください。</h5>
+                            <br>
+                        </div>
+                        <div class="center">
+                            <input id="returnInsertError" type="button" value="確認" class="btn btn-warning">
+                        </div>
+                    </div>
+                `);
+
+                $('#returnInsertError').focus();
+
+                // ESC 或 Tab 键控制
+                $('#overlay').on('keydown.focusTrap', function (e) {
+                    const active = document.activeElement;
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        $('#returnInsertError').focus();
+                    } else if (e.key === 'Escape') {
+                        $('#overlay').hide().off('keydown.focusTrap');
+                    }
+                });
+
+                // 返回按钮关闭
+                $('#returnInsertError').on('click', function () {
+                    $('#overlay').hide().off('keydown.focusTrap');
+                });
+                return; // 阻止后续执行
+            }
+
+            // 获取输入值
+            const name = $('#name').val();
+            const gender = $('#gender').val();
+            const birthday = $('#birthday').val();
+            const education = $('#education').val();
+            const languagelevel = $('#languagelevel').val();
+            const kurasu = $('#kurasuInput').val();
+            const kurasuId = $('#kurasuId').val();
+            const evaluation = $('#evaluation').val();
+            const other = $('#other').val();
+
+            // 弹框显示（只在点击后执行）
+            $('#overlay').fadeIn({
+                duration: 270,
+                start: function () {
+                    $(this).css({ 'display': 'grid', 'place-items': 'center' });
+                }
+            });
+
+            // 动态填入内容
+            $('#overlay').html(`
+            <div id="dialog" class="dialog" tabindex="-1">
+                <h4 class="dlgTitleConfirm">確認</h4>
+                <h5 class="center">以下の内容をご確認の上、</h5>
+                <h5 class="center">「登録」ボタンを押してください。</h5>
+                <br>
+                <div class="center">
+                    <p>学生名前：${name}</p>        
+                    <p>クラス名：${kurasu}</p>
+                </div>
+                <br>
+                <div class="center">
+                    <input id="confirmInsert" type="button" value="登録" class="btn btn-success update">
+                    <input id="returnInsert" type="button" value="キャンセル" class="btn btn-warning">
+                </div>
+            </div>
+        `);
+
+            $('#confirmInsert').focus();
+
+            // Tab / ESC
+            $('#overlay').on('keydown.focusTrap', function (e) {
+                const active = document.activeElement;
+                if (e.key === 'Tab') {
+                    if (!e.shiftKey && active === $('#returnInsert')[0]) {
+                        e.preventDefault();
+                        $('#confirmInsert').focus();
+                    } else if (e.shiftKey && active === $('#confirmInsert')[0]) {
+                        e.preventDefault();
+                        $('#returnInsert').focus();
+                    }
+                } else if (e.key === 'Escape') {
+                    $('#overlay').hide().off('keydown.focusTrap');
+                }
+            });
+
+            // Ajax提交
+            $('#confirmInsert').click(function () {
+                $.ajax({
+                    url: '/gakusei/insertGakuseiInfo',
+                    type: 'post',
+                    data: {
+                        namae: name,
+                        seibetsu: gender,
+                        seinengappi: birthday,
+                        saishuGakureki: education,
+                        gogakuryoku: languagelevel,
+                        kurasuId: kurasuId,
+                        kurasuNamae: kurasu,
+                        tensu: 20,
+                        hyouka: evaluation,
+                        sonota: other
+                    },
+                    success: function () {
+                        $('#overlay').fadeIn({ duration: 270, start: function () { $(this).css({ 'display': 'grid', 'place-items': 'center' }) } });
+                        $('#overlay').html(`
+									<div id="dialog" class="dialog" tabindex="-1">
+										<h4 class="dlgTitleMsg">通知</h4>	
+										<div style="text-align:center">
+											<p>新規できました。</p >
+											<br>
+											<input id='subReturnInsert' type='button' value='確認' onclick="location.href='/gakusei'" class="btn btn-warning">
+										</div>	
+									</div>	
+										`);
+                        $('#subReturnInsert').focus();
+                        $('#overlay').on('keydown.focusTrap', function (e) {
+                            if (e.key === 'Tab') {
+                                const active = document.activeElement;
+
+                                if (!e.shiftKey && active === $('#subReturnInsert')[0]) {
+                                    e.preventDefault();
+                                    $('#subReturnInsert').focus();
+                                } else if (e.shiftKey && active === $('#subReturnInsert')[0]) {
+                                    e.preventDefault();
+                                    $('#subReturnInsert').focus();
+                                }
+                            }
+                        })
+                    },
+                    error: function () {
+                        alert('新規できませんでした');
+                    }
+                });
+            });
+
+            // 返回按钮
+            $('#returnInsert').click(function () {
+                $('#overlay').hide().off('keydown.focusTrap');
+            });
+        });
+    });
+</script>
+
+</html>
