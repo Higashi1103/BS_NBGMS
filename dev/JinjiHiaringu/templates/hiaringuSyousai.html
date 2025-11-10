@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>技術者管理システム</title>
+	<meta charset="utf-8">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css" rel="stylesheet">
+
+	<style>
+		.navbar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 51px;
+			background-color: #f9f9f9;
+			color: #000000;
+			display: flex;
+			align-items: center;
+			padding: 0 10px;
+			box-sizing: border-box;
+			z-index: 1000;
+			border-bottom: 1px solid #e5e5e5;
+		}
+
+		a {
+			letter-spacing: 0.05em;
+		}
+
+		#title {
+			position: absolute;
+			left: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 18px;
+			color: #777;
+		}
+
+		#user {
+			position: absolute;
+			right: 20px;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+		}
+
+		.dropdown-menu {
+			display: none;
+			position: absolute;
+			top: 40px;
+			right: 0;
+			transform: translateX(-100px);
+			background-color: #fff;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+			min-width: 100px;
+			z-index: 2000;
+		}
+
+		.dropdown-menu a {
+			display: block;
+			padding: 8px 10px;
+			color: #333;
+			text-decoration: none;
+			font-size: 14px;
+		}
+
+		.dropdown-menu a:hover {
+			background-color: #f2f2f2;
+		}
+
+
+		.sidebar {
+			position: fixed;
+			top: 51px;
+			left: 0;
+			width: 250px;
+			height: calc(100% - 51px);
+			background-color: #f9f9f9;
+			color: rgb(48, 48, 48);
+			box-sizing: border-box;
+			border-right: 1px solid #e5e5e5;
+		}
+
+		.sidebar-nav div {
+			margin: 0;
+			padding: 10px;
+			border-bottom: 1px solid #e5e5e5;
+
+		}
+
+		.sidebar-nav div a {
+			color: #454545;
+			font-size: 14px;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+		}
+
+		.sidebar-nav div:hover {
+			background-color: #e6e6e6;
+			color: #fff;
+		}
+
+		.main-content {
+			margin-top: 30px;
+			margin-left: 240px;
+			padding: 40px;
+			min-height: calc(100vh - 51px);
+			background-color: #fff;
+			display: flex;
+			justify-content: center;
+		}
+
+		#shousaitable {
+			width: 1060px;
+			table-layout: auto;
+		}
+
+		/*经理的弹窗*/
+		.overlay {
+			position: fixed;
+			/* 固定在视口，而不是文档流 */
+			top: 0;
+			left: 0;
+			width: 100vw;
+			/* 覆盖整个可视宽度 */
+			height: 100vh;
+			/* 覆盖整个可视高度 */
+			background: rgba(0, 0, 0, 0.45);
+			/* 半透明遮罩 */
+			display: flex;
+			/* 居中内容 */
+			z-index: 9999;
+			/* 超高层级，保证在所有元素上方 */
+		}
+
+		.dialog {
+			background: white;
+			border-radius: 12px;
+			width: 400px;
+			height: 220px;
+			margin-top: 15%;
+			margin-left: 43%;
+			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+			z-index: 10000;
+			/* 比遮罩略高，但一般只要父层够高就行 */
+		}
+
+		.dlgTitle {
+			background-color: #f0ad4e;
+			margin-top: 0;
+			height: 40px;
+			/* 固定标题高度 */
+			line-height: 40px;
+			/* 垂直居中 */
+			border-radius: 12px 12px 0px 0px;
+			padding: 0 10px;
+			
+			border-bottom: 1px solid gray;
+			color: white;
+			font-weight: bold;
+		}
+		
+		.size-no-change {
+			resize: none;
+			/* 禁止拖拽 */
+			overflow-y: auto;
+			/* 超出时滚动 */
+			min-height: 60px;
+			max-height: 300px;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- ヘッド -->
+	<nav class="navbar" style="margin-bottom: 0">
+		<div id="title">技術者管理システム</div>
+
+		<!-- ログアウトバタン -->
+		<div id="user">
+			<img src="/image/user.png" height="25px">
+			<div class="dropdown-menu" id="dropdownMenu">
+				<a href="#">ログアウト</a>
+			</div>
+		</div>
+
+		<!-- 左ナビ -->
+		<div class="sidebar">
+			<div class="sidebar-nav">
+				<div>
+					<a th:href="@{/kurasu}"><img src="/image/kurasu.png" height="18px"
+							style="margin-right: 5px;">クラス情報</a>
+				</div>
+				<div>
+					<a th:href="@{/gakusei}"><img src="/image/gakusei.png" height="18px"
+							style="margin-right: 5px;">学生情報</a>
+				</div>
+				<div>
+					<a th:href="@{/tensu}"><img src="/image/pointo.png" height="18px"
+							style="margin-right: 5px;">ポイント履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/hiaringu}"><img src="/image/hiaringu.png" height="18px"
+							style="margin-right: 5px;">ヒアリング履歴</a>
+				</div>
+				<div>
+					<a th:href="@{/shuturyoku}"><img src="/image/shutsuryoku.png" height="18px"
+							style="margin-right: 5px;">出力</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="main-content">
+		<div id="table-content">
+			<div class="col-lg-12">
+				<div class="panel panel-default" style="width: 1090px;">
+					<div class="panel-heading">
+						ヒアリング詳細
+					</div>
+					<div class="panel-body">
+						<form id="syousaiForm" th:action="@{/hiaringu/update}" method="post">
+							<!--增加一个隐藏字段一起传回后台-->
+							<input type="hidden" name="id" th:value="${hiaringu['hiaringuId']}">
+
+							<div class="form-group" style="margin-bottom: 20px;">
+								<h4 style="margin: 0;">
+									<strong>ヒアリング番号：</strong>
+									<span th:text="${hiaringu.hiaringuId}" style="margin-left: 10px;"></span>
+								</h4>
+							</div>
+
+							<div class="row">
+								<!--左列-->
+								<div class="col-lg-6">
+									<fieldset disabled>
+										<div class="form-group">
+											<label for="disabledSelect">学生名前：</label>
+											<input class="form-control" id="gakuseiNamae" name="gakuseiNamae"
+												type="text" th:value="${hiaringu['gakuseiNamae']}" disabled>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">所属クラス：</label>
+											<input class="form-control" id="kurasuNamae" name="kurasuNamae" type="text"
+												th:value="${hiaringu['kurasuNamae']}" disabled>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング担当者：</label>
+											<input class="form-control" id="tantousya" name="tantousya" type="text"
+												th:value="${hiaringu['tantousya']}" disabled>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング日時：</label>
+											<input class="form-control" id="hiaringuNichiji" name="hiaringuNichiji"
+												type="text" th:value="${hiaringu['hiaringuNichiji']}" disabled>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング時間：</label>
+											<input class="form-control" id="hiaringuJikan" name="hiaringuJikan"
+												type="text" th:value="${hiaringu['hiaringuJikan']}" disabled>
+										</div>
+
+										
+									</fieldset>
+								</div>
+
+								<!--右列-->
+								<div class="col-lg-6">
+									<fieldset disabled>
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング場所：</label>
+											<input class="form-control" id="hiaringuBasyo" name="hiaringuBasyo"
+												type="text" th:value="${hiaringu['hiaringuBasyo']}" disabled>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング原因：</label>
+											<input class="form-control" id="hiaringuGenin" name="hiaringuGenin"
+												type="text" th:value="${hiaringu['hiaringuGenin']}" disabled>
+										</div>
+										
+										<div class="form-group">
+											<label for="disabledSelect">ヒアリング内容：</label>
+											<textarea class="form-control size-no-change" id="hiaringuNaiyou" name="hiaringuNaiyou" disabled
+												rows="3" th:text="${hiaringu['hiaringuNaiyou']}"></textarea>
+										</div>
+
+										<div class="form-group">
+											<label for="disabledSelect">備考欄：</label>
+											<textarea class="form-control size-no-change" id="bikou" name="bikou"
+												rows="3" disabled th:text="${hiaringu['bikou']}"></textarea>
+										</div>
+
+										
+									</fieldset>
+								</div>
+							</div>
+
+							<!--按钮区域-->
+							<div style="text-align: right; margin-top: 20px;">
+								<input type="button" value="更新" id="editBtn" class="btn btn-primary">
+								<input type="button" value="削除" id="deleteBtn" class="btn btn-danger"
+									style="margin-left:10px;">
+							</div>
+						</form>
+					</div>
+					<!-- /.panel-body -->
+				</div>
+				<!-- /.panel -->
+			</div>
+		</div>
+	</div>
+
+	<!--删除确认弹窗-->
+	<div id="deleteConfirmOverlay" class="overlay" style="display: none;">
+		<div class="dialog">
+			<div class="dlgTitle">確認</div>
+			<div
+				style="padding: 25px 20px; height: calc(100% - 60px); display: flex; flex-direction: column; justify-content: space-between;">
+				<div style="text-align: center;">
+					<p style="color: #d9534f; font-weight: bold; margin-bottom: 15px; font-size: 16px;">
+						ヒアリング情報を削除しますか？
+					</p>
+					<p style="font-size: 14px; color: #666; margin-bottom: 8px;">
+						ヒアリング番号: <strong id="deleteHiaringuId"></strong>
+					</p>
+					<p style="font-size: 14px; color: #666; margin-bottom: 0;">
+						学生名: <strong id="deleteGakuseiName"></strong>
+					</p>
+				</div>
+				<div style="text-align: center; margin-top: 20px;">
+					
+					<button type="button" class="btn btn-danger" id="confirmDeleteBtn" style="margin-right: 35px;padding: 6px 20px;">
+						削除
+					</button>
+					
+					<button type="button" class="btn btn-default" id="cancelDeleteBtn"
+						style=" padding: 6px 20px;background-color: #f0ad4e;">
+						キャンセル
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 删除成功弹窗 -->
+	<div id="deleteSuccessOverlay" class="overlay" style="display: none;">
+		<div class="dialog">
+			<div class="dlgTitle" style="background-color:skyblue">通知</div>
+			<div
+				style="padding: 30px 20px; height: calc(100% - 60px); display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+				<div style="text-align: center;">
+					<p style="margin: 0; font-size: 16px;">ヒアリング情報が削除されました。
+					</p>
+				</div>
+				<div style="text-align: center;">
+					<button type="button" class="btn btn-warning" id="closeSuccessModal" style="padding: 6px 30px;">
+						確認
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script>
+		$(function () {
+			$('#user').on('click', function (e) {
+				e.stopPropagation();
+				$('#dropdownMenu').toggle();
+			});
+
+			$(document).on('click', function () {
+				$('#dropdownMenu').hide();
+			});
+		});
+		$(document).ready(function () {
+			$('#dataTables-example').DataTable({
+				responsive: true
+			});
+
+		//点击输入框时清除错误状态
+		$('input, textarea, select').on('focus input', function () {
+		var $group = $(this).closest('.form-group');
+		$group.removeClass('has-error');
+		$group.find('.error-message').hide();
+	});
+
+			// 伦理删除功能
+			$("#deleteBtn").click(function () {
+				// 获取当前页面的数据
+				const hiaringuId = $("input[name='id']").val();
+				const gakuseiNamae = $("#gakuseiNamae").val();
+
+				// 在确认弹窗中显示信息
+				$("#deleteHiaringuId").text(hiaringuId);
+				$("#deleteGakuseiName").text(gakuseiNamae);
+
+				// 显示确认弹窗
+				$("#deleteConfirmOverlay").show();
+			});
+
+			$("#editBtn").click(function () {
+				// 获取当前页面的数据
+				const hiaringuId = $("input[name='id']").val();
+				window.location.href = `/hiaringu/hiaringuKoushin?id=${hiaringuId}`;
+			});
+
+
+			// 取消删除按钮
+			$("#cancelDeleteBtn").click(function () {
+				$("#deleteConfirmOverlay").hide();
+			});
+
+			// 确认删除按钮点击事件
+			$("#confirmDeleteBtn").click(function () {
+				const hiaringuId = $("input[name='id']").val();
+
+				// 发送AJAX请求执行伦理删除
+				$.ajax({
+					url: '/hiaringu/ethicalDelete',
+					type: 'POST',
+					data: {
+						id: hiaringuId
+					},
+					success: function (response) {
+						// 隐藏确认弹窗
+						$("#deleteConfirmOverlay").hide();
+
+						if (response.success) {
+							// 显示成功弹窗
+							$("#deleteSuccessOverlay").show();
+						} else {
+							alert("削除に失敗しました: " + response.message);
+						}
+					},
+					error: function (xhr, status, error) {
+						$("#deleteConfirmOverlay").hide();
+						alert("削除リクエストに失敗しました: " + error);
+					}
+				});
+			});
+
+			// 成功弹窗关闭按钮
+			$("#closeSuccessModal").click(function () {
+				$("#deleteSuccessOverlay").hide();
+				// 成功后跳转回列表页面
+				window.location.href = '/hiaringu';
+			});
+		});
+	</script>
+</body>
+
+</html>
