@@ -81,3 +81,4 @@ public class SyousaiController {
         return result;
     }
 }
+
