@@ -1,1 +1,100 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.demo.entity.Gakusei;
+import com.example.demo.service.GakuseiService;
+
+@Controller
+@RequestMapping("/gakusei")
+public class GakuseiController {
+
+	@Autowired
+	private GakuseiService gakuseiService;
+
+	// 学生一览表画面
+	@GetMapping("")
+	public String showGakuseiList(Model model) {
+		List<Gakusei> gakuseiList = gakuseiService.getGakuseiKurasuTensuList(new Gakusei());
+		// 打印测试结果，记得删掉
+		for (Gakusei g : gakuseiList) {
+			System.out.println("→ " + g.getGakuseiId() + " | " + g.getNamae() + " | " + g.getKurasuNamae());
+		}
+		model.addAttribute("gakuseiList", gakuseiList);
+		return "gakusei/gakusei";
+	}
+
+	// 学生情报详细画面
+	@GetMapping("/gakuseishousai")
+	public String showGakuseiDetail(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
+		Gakusei param = new Gakusei();
+		param.setGakuseiId(gakuseiId);
+		Gakusei gakuseiDetail = gakuseiService.getGakuseiDetail(param);
+		model.addAttribute("gakuseiDetail", gakuseiDetail);
+		return "gakusei/gakuseishousai";
+	}
+
+	// 学生情报更新画面
+	@GetMapping("/update")
+	public String showUpdatePage(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
+		Gakusei param = new Gakusei();
+		param.setGakuseiId(gakuseiId);
+		Gakusei gakusei = gakuseiService.getGakuseiById(param);
+		model.addAttribute("singleGakusei", gakusei);
+		return "gakusei/gakuseiupdate";
+	}
+
+	// 更新画面 -> 数据更新
+	@PostMapping("/updateGakuseiInfo")
+	@ResponseBody
+	public String updateGakuseiInfo(Gakusei gakusei) {
+		// 打印测试结果，记得删掉
+		System.out.println("更新学生信息：" + gakusei.getNamae());
+		gakuseiService.updateGakuseiInfo(gakusei);
+		return "success";
+	}
+
+	// 学生情报新規画面
+	@GetMapping("/insert")
+	public String showInsertPage(Model model) {
+		model.addAttribute("gakusei", new Gakusei());
+		return "gakusei/gakuseiinsert";
+	}
+
+	// 学生新規登録
+	@PostMapping("/insertGakuseiInfo")
+	@ResponseBody
+	public String insertGakusei(Gakusei gakusei) {
+		gakuseiService.insertGakusei(gakusei);
+		return "success";
+	}
+
+	// 学生新规画面-放大镜功能(班级名模糊検索)
+	@GetMapping("/searchByKurasuNamae")
+	@ResponseBody
+	public List<Gakusei> searchByKurasuNamae(@RequestParam("kurasuNamae") String kurasuNamae) {
+		// 打印测试结果，记得删掉
+		System.out.println("🔍 クラス検索キーワード：" + kurasuNamae);
+		return gakuseiService.searchByKurasuNamae(kurasuNamae);
+	}
+
+	/** 学生削除(论理删除) */
+	@PostMapping("/deleteGakuseiInfo")
+	@ResponseBody
+	public String deleteGakuseiInfo(@RequestParam("gakuseiId") int gakuseiId) {
+		System.out.println("削除対象学生ID：" + gakuseiId);
+		gakuseiService.deleteGakuseiInfo(gakuseiId);
+		return "success";
+	}
+
+}
 
