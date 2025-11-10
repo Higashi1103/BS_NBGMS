@@ -19,43 +19,38 @@ import com.example.demo.service.hiaringu.JinjiHiaringuService;
 @RequestMapping("/api/hiaringu")
 public class JinjiHiaringuController {
 
-    private final JinjiHiaringuMapper mapper;
-    
+	private final JinjiHiaringuMapper mapper;
+
 	@Autowired
 	private JinjiHiaringuService hiaringuService;
-    
-	/*	public JinjiHiaringuController(JinjiHiaringuService service) {
-	    this.service = service;
-	}*/
-	
-    public JinjiHiaringuController(JinjiHiaringuMapper mapper) {
-        this.mapper = mapper;
-    }
 
+	public JinjiHiaringuController(JinjiHiaringuMapper mapper) {
+		this.mapper = mapper;
+	}
 
-    @GetMapping("/all")
-    public List<JinjiHiaringu> getAll() {
-        return mapper.findAll();
-    }
+	@GetMapping("/all")
+	public List<JinjiHiaringu> getAll() {
+		return mapper.findAll();
+	}
 
-    @GetMapping("/search")
-    public List<JinjiHiaringu> search(@RequestParam("keyword") String keyword) {
-        return mapper.search(keyword);
-    }
-    
-    @GetMapping("/all-with-student")
-    public List<Map<String, Object>> getAllHiaringu(){
-    	return hiaringuService.getAllHiaringuWithStudentInfo(); 
-    }
-    
-    @GetMapping("/allGakusei")
-    public List<Map<String, Object>> getAllGakusei() {
-        return mapper.findAllGakusei();
-    }
-    
-    @PostMapping("/insert")
+	@GetMapping("/search")
+	public List<JinjiHiaringu> search(@RequestParam("keyword") String keyword) {
+		return mapper.search(keyword);
+	}
+
+	@GetMapping("/all-with-student")
+	public List<Map<String, Object>> getAllHiaringu() {
+		return hiaringuService.getAllHiaringuWithStudentInfo();
+	}
+
+	@GetMapping("/allGakusei")
+	public List<Map<String, Object>> getAllGakusei() {
+		return mapper.findAllGakusei();
+	}
+
+	@PostMapping("/insert")
 	public String insertHiaringu(@RequestBody JinjiHiaringu hiaringu) {
-	    boolean result = hiaringuService.insertHiaringu(hiaringu);
-	    return result ? "success" : "fail";
+		boolean result = hiaringuService.insertHiaringu(hiaringu);
+		return result ? "success" : "fail";
 	}
 }
