@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dito.hiaringu.GakuseiDTO;
-import com.example.demo.entity.hiaringu.Gakusei;
+import com.example.demo.entity.hiaringu.GakuseiKurasu;
 import com.example.demo.entity.hiaringu.JinjiHiaringu;
 import com.example.demo.mapper.hiaringu.JinjiHiaringuMapper;
 
@@ -28,7 +28,7 @@ public class JinjiHiaringuService {
     @Transactional
     public boolean insertHiaringu(JinjiHiaringu hiaringu) {
         //根据学生姓名查学生ID
-        Gakusei gakusei = mapper.findGakuseiByName(hiaringu.getGakuseiNamae());
+        GakuseiKurasu gakusei = mapper.findGakuseiByName(hiaringu.getGakuseiNamae());
         if (gakusei == null) {
             throw new RuntimeException("該当する学生が存在しません: " + hiaringu.getGakuseiNamae());
         }
