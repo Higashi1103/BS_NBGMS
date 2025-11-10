@@ -62,7 +62,7 @@
 </select>
 
  <!-- ① 查找学生信息 -->
-    <select id="findGakuseiByName" parameterType="string" resultType="com.example.demo.entity.hiaringu.Gakusei">
+    <select id="findGakuseiByName" parameterType="string" resultType="com.example.demo.entity.hiaringu.GakuseiKurasu">
         SELECT gakusei_id AS gakuseiId,
                kurasu_id AS kurasuId,
                namae
