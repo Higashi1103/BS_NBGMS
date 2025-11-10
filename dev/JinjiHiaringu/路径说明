@@ -1,0 +1,45 @@
+BS_NBGMS2025 [boot] [devtools]
+├── デプロイ済みリソース
+├── .settings
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── example
+        │           └── demo
+        │               ├── controller
+        │               │   └── hiaringu
+        │               │   │      └── JinjiHiaringuController.java
+        │               │   │      └── ShinkiController.java
+        │               │   │      └── SyousaiController.java  
+        │               │   └── GamennController.java
+        │               ├── dito
+        │               │   └── hiaringu
+        │               │       └── GakuseiDTO.java
+        │               ├── entity
+        │               │   └── hiaringu
+        │               │       ├── Gakusei.java
+        │               │       └── JinjiHiaringu.java
+        │               ├── mapper
+        │               │     └── hiaringu
+        │               │            └──JinjiHiaringuMapper.java
+        │               └── service
+        │               │      └──hiaringu
+        │               │            └──JinjiHiaringuService.java  
+        │               └── BsNbgms2025Application.java
+        │               └── ServletInitializer.java
+        └── resources
+            ├── mapper
+            │   └── hiaringu
+            │       └── JinjiHiaringuMapper.xml
+            ├── static
+            │   └── image
+            ├── templates
+            │   ├── gakusei
+            │   │   └── hiaringu
+            │   │       ├── hiaringu.html
+            │   │       ├── hiaringuKoushin.html
+            │   │       ├── hiaringuShinki.html
+            │   │       └── hiaringuSyousai.html
+            │   ├── kurasu
+            │   └── tensu
