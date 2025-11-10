@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.hiaringu.JinjiHiaringuMapper">
+
+  <resultMap id="JinjiHiaringuMap" type="com.example.demo.entity.hiaringu.JinjiHiaringu">
+    <id column="hiaringu_id" property="hiaringuId"/>
+    <result column="gakusei_id" property="gakuseiId"/>
+    <result column="tantousya" property="tantousya"/>
+    <result column="hiaringu_nichiji" property="hiaringuNichiji"/>
+    <result column="hiaringu_jikan" property="hiaringuJikan"/>
+    <result column="hiaringu_basyo" property="hiaringuBasyo"/>
+    <result column="hiaringu_genin" property="hiaringuGenin"/>
+    <result column="hiaringu_naiyou" property="hiaringuNaiyou"/>
+    <result column="bikou" property="bikou"/>
+    <result column="sakuseisha" property="sakuseisha"/>
+    <result column="sakusei_nichiji" property="sakuseiNichiji"/>
+    <result column="koushinsha" property="koushinsha"/>
+    <result column="koushin_nichiji" property="koushinNichiji"/>
+  </resultMap>
+  
+<select id="findAll" resultType="com.example.demo.entity.hiaringu.JinjiHiaringu">
+  SELECT * FROM jinji_hiaringu ORDER BY gakusei_id DESC;
+</select>
+
+<select id="findById" parameterType="int" resultType="com.example.demo.entity.hiaringu.JinjiHiaringu">
+  SELECT * FROM jinji_hiaringu WHERE hiaringu_id = #{id};
+</select>
+
+<!-- 根据ID查询详细信息（含学生姓名和班级名） -->
+  <select id="findByIdWithDetails" parameterType="int" resultType="java.util.Map">
+    SELECT 
+        h.hiaringu_id as hiaringuId,
+        h.gakusei_id as gakuseiId,
+        g.namae as gakuseiNamae,
+        k.KURASU_NAMAE as kurasuNamae,
+        h.tantousya,
+        h.hiaringu_nichiji as hiaringuNichiji,
+        h.hiaringu_jikan as hiaringuJikan,
+        h.hiaringu_basyo as hiaringuBasyo,
+        h.hiaringu_genin as hiaringuGenin,
+        h.hiaringu_naiyou as hiaringuNaiyou,
+        h.bikou,
+        h.sakuseisha as sakuseisha,
+        h.sakusei_nichiji as sakuseiNichiji,
+        h.koushinsha as koushinsha,
+        h.koushin_nichiji as koushinNichiji
+    FROM jinji_hiaringu h
+    LEFT JOIN gakusei g ON h.gakusei_id = g.gakusei_id
+    LEFT JOIN kurasu_info k ON g.kurasu_id = k.KURASU_ID
+    WHERE h.hiaringu_id = #{id}
+  </select>
+
+<select id="search" parameterType="string" resultType="com.example.demo.entity.hiaringu.JinjiHiaringu">
+  SELECT * 
+  FROM jinji_hiaringu
+  WHERE tantousya LIKE CONCAT('%', #{keyword}, '%')
+     OR hiaringu_basyo LIKE CONCAT('%', #{keyword}, '%')
+     OR hiaringu_genin LIKE CONCAT('%', #{keyword}, '%');
+</select>
+
+ <!-- ① 查找学生信息 -->
+    <select id="findGakuseiByName" parameterType="string" resultType="com.example.demo.entity.hiaringu.Gakusei">
+        SELECT gakusei_id AS gakuseiId,
+               kurasu_id AS kurasuId,
+               namae
+        FROM gakusei
+        WHERE namae = #{namae}
+          AND DELETE_FLAG = 0
+    </select>
+    
+<!-- 模糊搜索学生 -->
+<select id="searchGakuseiByNamae" resultType="com.example.demo.dito.hiaringu.GakuseiDTO">
+    SELECT 
+       g.gakusei_id AS gakuseiId,
+        g.namae AS namae,
+        k.kurasu_namae AS kurasuNamae
+    FROM gakusei g
+    LEFT JOIN kurasu_info k ON g.kurasu_id = k.kurasu_id
+    WHERE g.namae LIKE CONCAT('%', #{keyword}, '%')
+      AND g.delete_flag = 0
+    ORDER BY g.kurasu_id DESC, g.namae ASC
+    LIMIT 20
+</select>
+
+    <!-- 插入人事ヒアリング记录 -->
+    <insert id="insertHiaringu" parameterType="com.example.demo.entity.hiaringu.JinjiHiaringu" useGeneratedKeys="true" keyProperty="hiaringuId">
+        INSERT INTO jinji_hiaringu (
+            gakusei_id,
+            tantousya,
+            hiaringu_nichiji,
+            hiaringu_jikan,
+            hiaringu_basyo,
+            hiaringu_genin,
+            hiaringu_naiyou,
+            bikou,
+            sakuseisha
+        ) VALUES (
+            #{gakuseiId},
+            #{tantousya},
+            #{hiaringuNichiji},
+            #{hiaringuJikan},
+            #{hiaringuBasyo},
+            #{hiaringuGenin},
+            #{hiaringuNaiyou},
+            #{bikou},
+            #{sakuseisha}
+        )
+    </insert>
+
+
+  <!-- 更新 -->
+  <update id="update" parameterType="com.example.demo.entity.hiaringu.JinjiHiaringu">
+    UPDATE jinji_hiaringu
+    SET tantousya = #{tantousya},
+        hiaringu_nichiji = #{hiaringuNichiji},
+        hiaringu_jikan = #{hiaringuJikan},
+        hiaringu_basyo = #{hiaringuBasyo},
+        hiaringu_genin = #{hiaringuGenin},
+        hiaringu_naiyou = #{hiaringuNaiyou},
+        bikou = #{bikou},
+        koushinsha = #{koushinsha},
+        koushin_nichiji = NOW()
+    WHERE hiaringu_id = #{hiaringuId};
+  </update>
+
+<!-- 伦理删除 -->
+<update id="ethicalDelete">
+    UPDATE jinji_hiaringu 
+    SET delete_flag = 1,
+        koushin_nichiji = NOW()
+    WHERE hiaringu_id = #{hiaringuId}
+</update>
+
+<!-- 修改查询，只查询未删除的数据 -->
+<select id="findAllWithStudentInfo" resultType="java.util.Map">
+    SELECT 
+        h.hiaringu_id as hiaringuId,
+        h.gakusei_id as gakuseiId,
+        g.namae as gakuseiNamae,
+        k.KURASU_NAMAE as kurasuNamae,
+        h.tantousya,
+        h.hiaringu_nichiji AS hiaringuNichiji,
+        h.hiaringu_basyo AS hiaringuBasyo,
+        h.hiaringu_genin AS hiaringuGenin
+    FROM jinji_hiaringu h
+    LEFT JOIN gakusei g ON h.gakusei_id = g.gakusei_id
+    LEFT JOIN kurasu_info k ON g.kurasu_id = k.KURASU_ID
+    WHERE h.delete_flag = 0   <!--只显示未删除的记录--> 
+    ORDER BY h.hiaringu_nichiji DESC
+</select>
+
+<!-- 放大镜查找学生信息 -->
+<select id="findAllGakusei" resultType="map">
+    SELECT 
+        g.gakusei_id,
+        g.namae AS namae,
+        g.kurasu_id,
+        k.KURASU_NAMAE
+    FROM gakusei g
+    LEFT JOIN kurasu_info k ON g.kurasu_id = k.kurasu_id
+    ORDER BY g.kurasu_id
+</select>
+</mapper>
