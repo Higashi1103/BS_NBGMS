@@ -18,10 +18,7 @@ public class GakuseiService {
 		return gakuseiMapper.getGakuseiKurasuTensuList(gakusei);
 	}
 
-//	// 调用 Mapper 的学生详细画面内容的方法
-//	public Gakusei getGakuseiDetail(Gakusei gakusei) {
-//		return gakuseiMapper.getGakuseiDetail(gakusei);
-//	}
+	// 调用 Mapper 的学生详细画面内容的方法
 	public Gakusei getGakuseiDetail(int gakuseiId) {
 		return gakuseiMapper.getGakuseiDetail(gakuseiId);
 	}
@@ -31,10 +28,7 @@ public class GakuseiService {
 		gakuseiMapper.updateGakuseiInfo(gakusei);
 	}
 
-//	// 更新画面的查询方法(getGakuseiById)
-//	public Gakusei getGakuseiById(Gakusei gakusei) {
-//		return gakuseiMapper.getGakuseiById(gakusei);
-//	}
+	// 更新画面的查询方法(getGakuseiById)
 	public Gakusei getGakuseiById(int gakuseiId) {
 		return gakuseiMapper.getGakuseiById(gakuseiId);
 	}
