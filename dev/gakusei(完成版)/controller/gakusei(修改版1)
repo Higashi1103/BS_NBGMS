@@ -33,17 +33,7 @@ public class GakuseiController {
 		return "gakusei/gakusei";
 	}
 
-//	// 学生情报详细画面
-//	@GetMapping("/gakuseishousai")
-//	public String showGakuseiDetail(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
-//		// 打印测试结果，记得删掉
-//		System.out.println("学生ID是：" + gakuseiId);
-//		Gakusei param = new Gakusei();
-//		param.setGakuseiId(gakuseiId);
-//		Gakusei gakuseiDetail = gakuseiService.getGakuseiDetail(param);
-//		model.addAttribute("gakuseiDetail", gakuseiDetail);
-//		return "gakusei/gakuseishousai";
-//	}
+	// 学生情报详细画面
 	@GetMapping("/gakuseishousai")
 	public String showGakuseiDetail(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
 		// 打印测试结果
@@ -54,15 +44,7 @@ public class GakuseiController {
 		return "/gakusei/gakuseishousai";
 	}
 
-//	// 学生情报更新画面
-//	@GetMapping("/update")
-//	public String showUpdatePage(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
-//		Gakusei param = new Gakusei();
-//		param.setGakuseiId(gakuseiId);
-//		Gakusei gakusei = gakuseiService.getGakuseiById(param);
-//		model.addAttribute("singleGakusei", gakusei);
-//		return "gakusei/gakuseiupdate";
-//	}
+	// 学生情报更新画面
 	@GetMapping("/update")
 	public String showUpdatePage(@RequestParam("gakuseiId") Integer gakuseiId, Model model) {
 		// 打印测试结果
