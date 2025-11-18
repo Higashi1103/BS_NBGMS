@@ -15,11 +15,9 @@ public interface GakuseiMapper {
 	List<Gakusei> getGakuseiKurasuTensuList(Gakusei gakusei);
 
 	// 三表联查 : 显示学生详细画面内容
-	// Gakusei getGakuseiDetail(Gakusei gakusei);
 	Gakusei getGakuseiDetail(@Param("gakuseiId") int gakuseiId);
 
 	// 三表联查 : 显示学生更新画面内容
-	// Gakusei getGakuseiById(Gakusei gakusei);
 	Gakusei getGakuseiById(@Param("gakuseiId") int gakuseiId);
 
 	// 三表联查 : 学生情报更新处理
