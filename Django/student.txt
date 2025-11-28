@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Student Search{% endblock %}
+
+{% block content %}
+
+<h2>Student Search</h2>
+
+<form method="get" class="d-flex align-items-center mb-3" style="gap: 10px;">
+    <input type="text" class="form-control rounded" name="q"
+           placeholder="Please enter student's name." value="{{ keyword }}">
+
+    <select name="page_size" onchange="this.form.submit()" class="form-select rounded" style="width: 120px;">
+        {% for size in page_size_options %}
+            <option value="{{ size }}" {% if size == page_size %}selected{% endif %}>
+                {{ size }} Lines
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary rounded">Search</button>
+</form>
+
+<hr>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Birthday</th>
+            <th>Skill</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in page_obj.object_list %}
+        <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ s.birthday }}</td>
+            <td>{{ s.skill }}</td>
+            <td>{{ s.status }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No students found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ keyword }}&page_size={{ page_size }}&page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ keyword }}&page_size={{ page_size }}&page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ keyword }}&page_size={{ page_size }}&page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock %}
