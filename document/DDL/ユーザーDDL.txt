@@ -6,4 +6,4 @@ CREATE TABLE `yuza` (
   `yuza_namae` varchar(100) DEFAULT NULL,
   `sakuseijikan` varchar(100) NOT NULL,
   `ronrisakujo` varchar(100) NOT NULL DEFAULT '0'
-) 
+);
